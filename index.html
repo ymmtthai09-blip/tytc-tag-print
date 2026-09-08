@@ -75,6 +75,28 @@ body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(
 .type-btn:hover{border-color:var(--blue);color:var(--blue);background:rgba(26,79,160,.05)}
 .type-btn.sel{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(26,79,160,.3)}
 
+/* STATUS BUTTONS (NG / Sorting / Rework / Wait Confirm / Special Use) */
+.status-group{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.status-btn{padding:5px 12px;border-radius:20px;border:1.5px solid var(--bdr2);background:var(--surf);cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;color:var(--txt2);transition:all .15s;white-space:nowrap}
+.status-btn:hover{border-color:var(--blue);color:var(--blue)}
+.status-btn.sel[data-c="red"]{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 2px 8px rgba(192,57,43,.35)}
+.status-btn.sel[data-c="yellow"]{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(232,160,32,.35)}
+.status-btn.sel[data-c="normal"]{background:var(--txt2);border-color:var(--txt2);color:#fff}
+.paper-hint{display:none;align-items:center;gap:7px;margin-top:8px;padding:7px 10px;border-radius:var(--rs);font-size:11.5px;font-weight:600}
+.paper-hint.show{display:flex}
+.paper-hint.red{background:rgba(192,57,43,.1);border:1px solid rgba(192,57,43,.35);color:#8c2e22}
+.paper-hint.yellow{background:rgba(232,160,32,.13);border:1px solid rgba(232,160,32,.4);color:#8a5a00}
+
+/* ISSUE / CAUSE TEXTAREA */
+.fld textarea{width:100%;padding:8px 10px;border:1px solid var(--bdr);border-radius:var(--rs);background:var(--surf);color:var(--txt);font-family:inherit;font-size:13px;transition:border-color .15s;resize:vertical;min-height:48px;line-height:1.4}
+.fld textarea:focus{outline:none;border-color:var(--blue)}
+
+/* ON-SCREEN TAG STATUS RIBBON */
+.tag-ribbon{font-size:12px;font-weight:900;text-align:center;padding:5px 4px;letter-spacing:1px;color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.25);white-space:nowrap}
+.tag-ribbon.red{background:#c0392b}
+.tag-ribbon.yellow{background:#c98a00}
+.tag-ribbon.tag-ribbon-box{font-size:16px;padding:6px 4px;letter-spacing:1.5px}
+
 /* RUN BOX CALCULATOR */
 .calc-box{background:linear-gradient(135deg,rgba(26,79,160,.06),rgba(26,79,160,.02));border:1px solid rgba(26,79,160,.2);border-radius:var(--r);padding:.9rem;margin-bottom:10px}
 .calc-box h4{font-size:12px;font-weight:600;color:var(--blue);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
@@ -121,6 +143,8 @@ body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(
 .delbtn:hover{background:rgba(192,57,43,.1)}
 .chip{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10.5px;font-weight:500;background:rgba(26,79,160,.1);color:var(--blue)}
 .chip.bag{background:rgba(26,122,74,.1);color:var(--green)}
+.chip.st-red{background:rgba(192,57,43,.12);color:var(--red)}
+.chip.st-yellow{background:rgba(232,160,32,.16);color:#8a5a00}
 
 /* DATA PREVIEW */
 .dtbl-wrap{overflow-x:auto;max-height:300px;overflow-y:auto}
@@ -239,6 +263,16 @@ body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(
             <label for="bg-rohs" style="font-size:12.5px;font-weight:600;color:#1a7a4a;cursor:pointer;text-transform:none;letter-spacing:0">🟢 ประทับตรา RoHS บน Tag</label>
           </div>
 
+          <div class="fld">
+            <label>สถานะ Tag</label>
+            <div class="status-group" id="bg-status-group"></div>
+            <div class="paper-hint" id="bg-paper-hint"></div>
+          </div>
+          <div class="fld">
+            <label>ปัญหา / สาเหตุ (ถ้ามี)</label>
+            <textarea id="bg-issue" placeholder="ระบุปัญหาหรือสาเหตุ เช่น รอยขีดข่วน, ขนาดเกินสเปค…" oninput="renderBag()"></textarea>
+          </div>
+
           <hr style="border:none;border-top:1px solid var(--bdr);margin:10px 0">
 
           <!-- RUN CALCULATOR -->
@@ -320,6 +354,16 @@ body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(
             <div class="fld"><label>DEL. DATE</label><input type="date" id="bx-del" oninput="renderBox()"></div>
           </div>
 
+          <div class="fld">
+            <label>สถานะ Tag</label>
+            <div class="status-group" id="bx-status-group"></div>
+            <div class="paper-hint" id="bx-paper-hint"></div>
+          </div>
+          <div class="fld">
+            <label>ปัญหา / สาเหตุ (ถ้ามี)</label>
+            <textarea id="bx-issue" placeholder="ระบุปัญหาหรือสาเหตุ เช่น รอยขีดข่วน, ขนาดเกินสเปค…" oninput="renderBox()"></textarea>
+          </div>
+
           <hr style="border:none;border-top:1px solid var(--bdr);margin:10px 0">
 
           <!-- RUN CALCULATOR -->
@@ -392,7 +436,7 @@ body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(
         <div id="q-content" style="display:none">
           <div class="dtbl-wrap" style="margin-bottom:1rem">
             <table class="qtbl">
-              <thead><tr><th>#</th><th>Type</th><th>ประเภท</th><th>Part Name</th><th>Part No.</th><th>LOT</th><th>Qty</th><th>Machine Type</th><th>ใบ</th><th></th></tr></thead>
+              <thead><tr><th>#</th><th>Type</th><th>สถานะ</th><th>Part Name</th><th>Part No.</th><th>LOT</th><th>Qty</th><th>ปัญหา/สาเหตุ</th><th>ใบ</th><th></th></tr></thead>
               <tbody id="q-tbody"></tbody>
             </table>
           </div>
@@ -421,6 +465,18 @@ let db = { products:[], customers:[] };
 let queue = [];
 let bgType = null; // selected type for bag
 let bxType = null; // selected type for box
+
+// ── TAG STATUS (NG / Sorting / Rework / Wait Confirm / Special Use) ──
+const STATUS_DEFS = {
+  normal : { label:'ปกติ',                 short:'',             color:null,     paper:null },
+  ng     : { label:'🔴 NG',                short:'NG',           color:'red',    paper:'กระดาษสีแดง (RED)' },
+  sorting: { label:'🟡 คัดแยก (Sorting)',   short:'SORTING',      color:'yellow', paper:'กระดาษสีเหลือง (YELLOW)' },
+  rework : { label:'🟡 Rework',            short:'REWORK',       color:'yellow', paper:'กระดาษสีเหลือง (YELLOW)' },
+  wait   : { label:'🟡 Wait Confirm',      short:'WAIT CONFIRM', color:'yellow', paper:'กระดาษสีเหลือง (YELLOW)' },
+  special: { label:'🟡 Special Use',       short:'SPECIAL USE',  color:'yellow', paper:'กระดาษสีเหลือง (YELLOW)' }
+};
+let bgStatus = 'normal'; // selected status for bag
+let bxStatus = 'normal'; // selected status for box
 
 // ══════════════════════════════════════════
 //  EXCEL LOAD
@@ -490,6 +546,39 @@ function selectType(mode, idx, btn){
   btn.classList.add('sel');
   if(mode==='bag'){ bgType=idx; renderBag(); }
   else { bxType=idx; renderBox(); }
+}
+
+// ══════════════════════════════════════════
+//  STATUS BUTTONS (NG / Sorting / Rework / Wait Confirm / Special Use)
+// ══════════════════════════════════════════
+function buildStatusButtons(containerId, mode){
+  const el = document.getElementById(containerId);
+  const cur = mode==='bag' ? bgStatus : bxStatus;
+  el.innerHTML = Object.keys(STATUS_DEFS).map(k=>{
+    const s = STATUS_DEFS[k];
+    const c = s.color||'normal';
+    return `<button type="button" class="status-btn${k===cur?' sel':''}" data-c="${c}" onclick="selectStatus('${mode}','${k}',this)">${s.label}</button>`;
+  }).join('');
+  updatePaperHint(mode);
+}
+
+function selectStatus(mode, key, btn){
+  const cid = mode==='bag' ? 'bg-status-group' : 'bx-status-group';
+  document.querySelectorAll(`#${cid} .status-btn`).forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  if(mode==='bag'){ bgStatus=key; renderBag(); }
+  else { bxStatus=key; renderBox(); }
+  updatePaperHint(mode);
+}
+
+function updatePaperHint(mode){
+  const key = mode==='bag' ? bgStatus : bxStatus;
+  const s = STATUS_DEFS[key];
+  const hint = document.getElementById(mode==='bag' ? 'bg-paper-hint' : 'bx-paper-hint');
+  if(!hint) return;
+  if(!s.paper){ hint.className='paper-hint'; hint.textContent=''; return; }
+  hint.className = 'paper-hint show '+s.color;
+  hint.textContent = `⚠️ Tag นี้ต้องพิมพ์ด้วย ${s.paper} — กรุณาใส่กระดาษให้ถูกสีก่อนพิมพ์`;
 }
 
 // ══════════════════════════════════════════
@@ -652,7 +741,11 @@ function buildBagTag(d, boxNum, totalBoxes){
   const typeLabel = d.typeLabel || '';
   const qtyDisplay = (boxNum && totalBoxes && d.total && d.qty) ? 
     (boxNum < totalBoxes ? d.qty : (parseInt(d.total)%parseInt(d.qty)||parseInt(d.qty))) : d.qty;
+  const st = STATUS_DEFS[d.status] || STATUS_DEFS.normal;
+  const ribbon = st.color ? `<div class="tag-ribbon ${st.color}">⚠ ${st.short}</div>` : '';
+  const issueRow = d.issue ? `<div class="tb-row"><span class="tb-lbl">ปัญหา/สาเหตุ</span><span class="tb-col">:</span><span class="tb-val" style="white-space:normal">${d.issue}</span></div>` : '';
   return `<div style="display:inline-block;padding:6px;border:1.5px dashed #aaa;border-radius:2px;flex-shrink:0;background:transparent"><div class="tag-bag">
+    ${ribbon}
     <div class="tb-hdr">TACHIBANA YAMAMOTO TECHNOLOGY(THAILAND)CO.,LTD</div>
     <div class="tb-body">
       <div class="tb-row"><span class="tb-lbl">PART NAME</span><span class="tb-col">:</span><span class="tb-val">${d.name}</span></div>
@@ -661,6 +754,7 @@ function buildBagTag(d, boxNum, totalBoxes){
       <div class="tb-row"><span class="tb-lbl">Q'TY</span><span class="tb-col">:</span><span class="tb-val">${qtyDisplay}</span><span style="font-size:8px;margin-left:3px">Pcs</span></div>
       <div class="tb-row"><span class="tb-lbl">LOT No.</span><span class="tb-col">:</span><span class="tb-val">${d.lot||'………………………'}</span></div>
       <div class="tb-row"><span class="tb-lbl">INSPECTION BY</span><span class="tb-col">:</span><span class="tb-val">${d.pic}</span></div>
+      ${issueRow}
       <div style="display:flex;justify-content:space-between;align-items:center;margin-top:5px;padding-top:4px;border-top:.5px solid #ddd">
         <span style="font-size:7px;color:#888">TACHIBANA YAMAMOTO TECH.</span>
         ${d.rohs ? `<div style="border:2px solid #1a7a4a;border-radius:3px;padding:2px 7px;font-size:10px;font-weight:900;color:#1a7a4a;letter-spacing:1.5px">RoHS</div>` : ''}
@@ -676,10 +770,17 @@ function buildBoxTag(d, boxNum, lastBoxNum, seqNum, totalBoxes){
   const del = d.del ? new Date(d.del).toLocaleDateString('en-GB') : '';
   const qtyDisplay = (seqNum && totalBoxes && d.total && d.qty) ?
     (seqNum < totalBoxes ? d.qty : (parseInt(d.total)%parseInt(d.qty)||parseInt(d.qty))) : d.qty;
+  const st = STATUS_DEFS[d.status] || STATUS_DEFS.normal;
+  const ribbon = st.color ? `<div class="tag-ribbon tag-ribbon-box ${st.color}">⚠ ${st.short}</div>` : '';
+  const issueRow = d.issue ? `<div style="display:flex;align-items:flex-start;border-bottom:1px solid #555;padding:5px 0 2px;gap:4px">
+        <span style="font-size:11px;font-weight:700;white-space:nowrap;min-width:82px">ปัญหา/สาเหตุ</span>
+        <span style="flex:1;font-size:10.5px;font-weight:700;color:#000;white-space:normal">${d.issue}</span>
+      </div>` : '';
   // RoHS badge shown in footer row only
   return `<div style="display:inline-block;padding:6px;border:1.5px dashed #aaa;border-radius:2px;flex-shrink:0;background:transparent">
   <div style="position:relative;background:#fff;border:1.5px solid #333;
       width:270px;font-family:Arial,sans-serif;font-size:10px;color:#000;">
+    ${ribbon}
     <!-- Company header -->
     <div style="border-bottom:1.5px solid #333;padding:4px 8px;font-size:8px;font-weight:bold;text-align:center;letter-spacing:.3px;line-height:1.3">
       TACHIBANA YAMAMOTO TECHNOLOGY(THAILAND)CO.,LTD
@@ -726,6 +827,7 @@ function buildBoxTag(d, boxNum, lastBoxNum, seqNum, totalBoxes){
         <span style="font-size:11px;font-weight:700;white-space:nowrap;min-width:82px">DEL. DATE</span>
         <span style="flex:1;font-size:11px;font-weight:900;color:#000;min-height:14px">${del}</span>
       </div>
+      ${issueRow}
     </div>
     <!-- Footer: DEL.DATE already rendered above, RoHS badge + FM ref -->
     <div style="display:flex;justify-content:flex-end;align-items:center;gap:6px;padding:2px 8px 4px">
@@ -742,7 +844,8 @@ function buildBoxTag(d, boxNum, lastBoxNum, seqNum, totalBoxes){
 function renderBag(){
   const d = { name:v('bg-name'), no:v('bg-no'), mat:v('bg-mat'), pic:v('bg-pic'),
               lot:v('bg-lot'), qty:v('bg-qty'), total:v('bg-total'),
-              rohs: document.getElementById('bg-rohs')?.checked||false, typeLabel:'' };
+              rohs: document.getElementById('bg-rohs')?.checked||false, typeLabel:'',
+              status: bgStatus, issue: v('bg-issue') };
   const n = parseInt(v('bg-copies'))||0;
   const total = parseInt(d.total)||0;
   const qty   = parseInt(d.qty)||0;
@@ -758,7 +861,8 @@ function renderBox(){
   const d = { cus:v('bx-cus'), name:v('bx-name'), no:v('bx-no'), mat:v('bx-mat'),
               cuslot:v('bx-cuslot'), lot:v('bx-lot'), del:v('bx-del'),
               qty:v('bx-qty'), total:v('bx-total'),
-              rohs: document.getElementById('bx-rohs')?.checked||false, typeLabel:'' };
+              rohs: document.getElementById('bx-rohs')?.checked||false, typeLabel:'',
+              status: bxStatus, issue: v('bx-issue') };
   const n = parseInt(v('bx-copies'))||0;
   const total = parseInt(d.total)||0;
   const qty   = parseInt(d.qty)||0;
@@ -776,12 +880,12 @@ function addQ(type){
   let item;
   const copies = parseInt(type==='bag'?v('bg-copies'):v('bx-copies'))||1;
   if(type==='bag'){
-    const d={name:v('bg-name'),no:v('bg-no'),mat:v('bg-mat'),pic:v('bg-pic'),lot:v('bg-lot'),qty:v('bg-qty'),total:v('bg-total'),rohs:document.getElementById('bg-rohs')?.checked||false,typeLabel:'',copies};
+    const d={name:v('bg-name'),no:v('bg-no'),mat:v('bg-mat'),pic:v('bg-pic'),lot:v('bg-lot'),qty:v('bg-qty'),total:v('bg-total'),rohs:document.getElementById('bg-rohs')?.checked||false,typeLabel:'',status:bgStatus,issue:v('bg-issue'),copies};
     if(!d.name&&!d.no){alert('กรุณาเลือกสินค้าก่อน');return;}
     item={type:'bag',...d};
   } else {
     const startBox = parseInt(v('bx-startbox'))||1;
-    const d={cus:v('bx-cus'),name:v('bx-name'),no:v('bx-no'),mat:v('bx-mat'),cuslot:v('bx-cuslot'),lot:v('bx-lot'),del:v('bx-del'),qty:v('bx-qty'),total:v('bx-total'),rohs:document.getElementById('bx-rohs')?.checked||false,typeLabel:'',copies,startBox};
+    const d={cus:v('bx-cus'),name:v('bx-name'),no:v('bx-no'),mat:v('bx-mat'),cuslot:v('bx-cuslot'),lot:v('bx-lot'),del:v('bx-del'),qty:v('bx-qty'),total:v('bx-total'),rohs:document.getElementById('bx-rohs')?.checked||false,typeLabel:'',status:bxStatus,issue:v('bx-issue'),copies,startBox};
     if(!d.name&&!d.no){alert('กรุณาเลือกสินค้าก่อน');return;}
     item={type:'box',...d};
   }
@@ -796,19 +900,22 @@ function updateQueue(){
   const empty=document.getElementById('q-empty'), content=document.getElementById('q-content');
   if(!queue.length){empty.style.display='';content.style.display='none';return;}
   empty.style.display='none'; content.style.display='';
-  document.getElementById('q-tbody').innerHTML = queue.map((item,i)=>`
+  document.getElementById('q-tbody').innerHTML = queue.map((item,i)=>{
+    const st = STATUS_DEFS[item.status] || STATUS_DEFS.normal;
+    const stChip = st.color ? `<span class="chip st-${st.color}">${st.short}</span>` : `<span class="chip">ปกติ</span>`;
+    return `
     <tr>
       <td>${i+1}</td>
       <td><span class="chip ${item.type==='bag'?'bag':''}">${item.type==='bag'?'🛍 ถุง':'📦 Box'}</span></td>
-      <td class="mono">${item.typeLabel||'-'}</td>
+      <td>${stChip}</td>
       <td>${item.name||'-'}</td>
       <td class="mono">${item.no||'-'}</td>
       <td class="mono">${item.lot||'-'}</td>
       <td>${item.qty||'-'} Pcs</td>
-      <td class="mono">${item.typeLabel||'-'}</td>
+      <td style="max-width:160px;white-space:normal;font-size:11.5px;color:var(--txt2)">${item.issue||'-'}</td>
       <td><strong>${item.copies}</strong></td>
       <td><button class="delbtn" onclick="delQ(${i})">✕</button></td>
-    </tr>`).join('');
+    </tr>`;}).join('');
   // preview
   let html='';
   queue.forEach(item=>{
@@ -836,7 +943,11 @@ function buildPrintBagTag(d, boxNum, totalBoxes){
   const qty = (boxNum && totalBoxes && d.total && d.qty)
     ? (boxNum < totalBoxes ? d.qty : (parseInt(d.total)%parseInt(d.qty)||parseInt(d.qty)))
     : (d.qty||'');
+  const st = STATUS_DEFS[d.status] || STATUS_DEFS.normal;
+  const ribbon = st.color ? `<div class="tag-ribbon-print ${st.color}">⚠ ${st.short}</div>` : '';
+  const issueRow = d.issue ? `<div class="pr" style="border-bottom:none"><span class="pl">ปัญหา/สาเหตุ</span><span class="pv" style="white-space:normal;font-size:12px">${d.issue}</span></div>` : '';
   return `<div class="pb">
+    ${ribbon}
     <div class="pb-hdr">TACHIBANA YAMAMOTO TECHNOLOGY (THAILAND) CO.,LTD</div>
     <div class="pb-body">
       <div class="pr"><span class="pl">PART NAME</span><span class="pv">${d.name||''}</span></div>
@@ -844,7 +955,8 @@ function buildPrintBagTag(d, boxNum, totalBoxes){
       <div class="pr"><span class="pl">MATERIAL</span><span class="pv">${d.mat||''}</span></div>
       <div class="pr"><span class="pl">Q'TY</span><span class="pv bold">${qty}</span><span class="pu">Pcs</span></div>
       <div class="pr"><span class="pl">LOT No.</span><span class="pv bold">${d.lot||''}</span></div>
-      <div class="pr" style="border-bottom:none"><span class="pl">INSPECTION BY</span><span class="pv">${d.pic||''}</span></div>
+      <div class="pr"${d.issue?'':' style="border-bottom:none"'}><span class="pl">INSPECTION BY</span><span class="pv">${d.pic||''}</span></div>
+      ${issueRow}
     </div>
     <div class="pb-foot">
       ${d.rohs ? '<span class="rohs-wm">RoHS</span>' : ''}
@@ -858,7 +970,11 @@ function buildPrintBoxTag(d, boxNum, lastBoxNum, seqNum, totalBoxes){
   const qty = (seqNum && totalBoxes && d.total && d.qty)
     ? (seqNum < totalBoxes ? d.qty : (parseInt(d.total)%parseInt(d.qty)||parseInt(d.qty)))
     : (d.qty||'');
+  const st = STATUS_DEFS[d.status] || STATUS_DEFS.normal;
+  const ribbon = st.color ? `<div class="tag-ribbon-print ${st.color}">⚠ ${st.short}</div>` : '';
+  const issueRow = d.issue ? `<div class="pr2" style="border-bottom:none;align-items:flex-start"><span class="pl2">ปัญหา/สาเหตุ</span><span class="pv2" style="white-space:normal;font-size:11px">${d.issue}</span></div>` : '';
   return `<div class="px">
+    ${ribbon}
     <div class="px-hdr">TACHIBANA YAMAMOTO TECHNOLOGY (THAILAND) CO.,LTD</div>
     <div class="px-body">
       <div class="pr2"><span class="pl2">CUS. NAME</span><span class="pv2">${d.cus||''}</span></div>
@@ -876,6 +992,7 @@ function buildPrintBoxTag(d, boxNum, lastBoxNum, seqNum, totalBoxes){
         <span class="pv2 bold">${del}</span>
         ${d.rohs ? '<span class="rohs-box-badge">RoHS</span>' : ''}
       </div>
+      ${issueRow}
     </div>
     <div class="px-foot">FM-GN-021 REV.001</div>
   </div>`;
@@ -1069,6 +1186,17 @@ html, body { background: #fff; font-family: Arial, Helvetica, sans-serif; -webki
   flex-shrink: 0;
   position: relative; z-index: 1;
 }
+
+/* ── STATUS RIBBON (NG / Sorting / Rework / Wait Confirm / Special Use) ── */
+.tag-ribbon-print {
+  font-size: 20px; font-weight: 900;
+  text-align: center; padding: 5px 3px;
+  letter-spacing: 1.6px; color: #fff;
+  text-shadow: 0 1px 1px rgba(0,0,0,.25);
+  flex-shrink: 0; position: relative; z-index: 1;
+}
+.tag-ribbon-print.red    { background: #c0392b; }
+.tag-ribbon-print.yellow { background: #b8790a; }
 </style>`;
 }
 
@@ -1097,17 +1225,28 @@ function openPrint(tagItems){
   w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Print Tags — TYT</title>${getPrintStyles()}</head><body>${pagesHtml}<script>setTimeout(()=>{window.print();},600)<\/script></body></html>`);
   w.document.close();
 }
+
+// Confirm the correct colored paper is loaded before sending non-normal-status tags to print.
+// Returns true to proceed, false if the user cancels.
+function confirmPaperColors(statusKeys){
+  const papers = [...new Set(statusKeys.map(k=>(STATUS_DEFS[k]||STATUS_DEFS.normal).paper).filter(Boolean))];
+  if(!papers.length) return true;
+  return confirm(`⚠️ งานพิมพ์นี้มี Tag ที่ต้องใช้กระดาษสีพิเศษ:\n\n${papers.map(p=>'• '+p).join('\n')}\n\nกรุณาใส่กระดาษให้ถูกสีในเครื่องพิมพ์ก่อนดำเนินการต่อ`);
+}
+
 function printNow(type){
   const items=[];
   if(type==='bag'){
-    const d={name:v('bg-name'),no:v('bg-no'),mat:v('bg-mat'),pic:v('bg-pic'),lot:v('bg-lot'),qty:v('bg-qty'),total:v('bg-total'),rohs:document.getElementById('bg-rohs')?.checked||false};
+    const d={name:v('bg-name'),no:v('bg-no'),mat:v('bg-mat'),pic:v('bg-pic'),lot:v('bg-lot'),qty:v('bg-qty'),total:v('bg-total'),rohs:document.getElementById('bg-rohs')?.checked||false,status:bgStatus,issue:v('bg-issue')};
+    if(!confirmPaperColors([d.status])) return;
     const n=parseInt(v('bg-copies'))||1;
     const total=parseInt(d.total)||0,qty=parseInt(d.qty)||0;
     const totalC=(total&&qty)?(Math.floor(total/qty)+(total%qty>0?1:0)):n;
     for(let i=1;i<=n;i++) items.push({type:'bag',html:buildPrintBagTag(d,i,totalC)});
   } else {
     const startBox=parseInt(v('bx-startbox'))||1;
-    const d={cus:v('bx-cus'),name:v('bx-name'),no:v('bx-no'),mat:v('bx-mat'),cuslot:v('bx-cuslot'),lot:v('bx-lot'),del:v('bx-del'),qty:v('bx-qty'),total:v('bx-total'),rohs:document.getElementById('bx-rohs')?.checked||false};
+    const d={cus:v('bx-cus'),name:v('bx-name'),no:v('bx-no'),mat:v('bx-mat'),cuslot:v('bx-cuslot'),lot:v('bx-lot'),del:v('bx-del'),qty:v('bx-qty'),total:v('bx-total'),rohs:document.getElementById('bx-rohs')?.checked||false,status:bxStatus,issue:v('bx-issue')};
+    if(!confirmPaperColors([d.status])) return;
     const n=parseInt(v('bx-copies'))||1;
     const total=parseInt(d.total)||0,qty=parseInt(d.qty)||0;
     const totalC=(total&&qty)?(Math.floor(total/qty)+(total%qty>0?1:0)):n;
@@ -1117,6 +1256,7 @@ function printNow(type){
 }
 
 function printQueue(){
+  if(!confirmPaperColors(queue.map(item=>item.status))) return;
   const items=[];
   queue.forEach(item=>{
     const total=parseInt(item.total)||0,qty=parseInt(item.qty)||0;
@@ -1139,16 +1279,18 @@ function sw(name,el){
   ['bag','box','queue'].forEach(t=>document.getElementById('t-'+t).style.display=t===name?'':'none');
 }
 function clrBag(){
-  ['bg-cus','bg-name','bg-no','bg-mat','bg-pic','bg-lot','bg-qty','bg-total'].forEach(id=>document.getElementById(id).value='');
+  ['bg-cus','bg-name','bg-no','bg-mat','bg-pic','bg-lot','bg-qty','bg-total','bg-issue'].forEach(id=>document.getElementById(id).value='');
   if(document.getElementById('bg-rohs')) document.getElementById('bg-rohs').checked=false;
   document.getElementById('bg-copies').value=1;
   document.getElementById('bg-bags').textContent='0';
   document.getElementById('bg-rem').classList.remove('show');
   document.getElementById('bg-hint').textContent='กรอกจำนวนชิ้นงานและ Qty ต่อถุง';
+  bgStatus='normal';
+  buildStatusButtons('bg-status-group','bag');
   renderBag();
 }
 function clrBox(){
-  ['bx-cus','bx-name','bx-no','bx-mat','bx-cuslot','bx-lot','bx-del','bx-qty','bx-total'].forEach(id=>document.getElementById(id).value='');
+  ['bx-cus','bx-name','bx-no','bx-mat','bx-cuslot','bx-lot','bx-del','bx-qty','bx-total','bx-issue'].forEach(id=>document.getElementById(id).value='');
   if(document.getElementById('bx-rohs')) document.getElementById('bx-rohs').checked=false;
   document.getElementById('bx-copies').value=1;
   document.getElementById('bx-startbox').value=1;
@@ -1156,11 +1298,15 @@ function clrBox(){
   document.getElementById('bx-boxes').textContent='0';
   document.getElementById('bx-rem').classList.remove('show');
   document.getElementById('bx-hint').textContent='กรอกจำนวนชิ้นงานและ Qty ต่อกล่อง';
+  bxStatus='normal';
+  buildStatusButtons('bx-status-group','box');
   renderBox();
 }
 
 // init
 document.getElementById('bx-del').value = new Date().toISOString().split('T')[0];
+buildStatusButtons('bg-status-group','bag');
+buildStatusButtons('bx-status-group','box');
 </script>
 </body>
 </html>
