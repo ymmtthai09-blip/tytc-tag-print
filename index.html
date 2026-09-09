@@ -158,9 +158,11 @@ body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(
 .tb-hdr{background:#0d2240;color:#fff;font-size:7.5px;font-weight:bold;text-align:center;padding:3px 5px;letter-spacing:.3px}
 .tb-body{padding:5px 7px}
 .tb-row{display:flex;gap:2px;margin-bottom:3px;align-items:flex-end}
-.tb-lbl{white-space:nowrap;min-width:72px;font-size:8.5px;font-weight:600}
-.tb-col{margin:0 2px;font-weight:600}
-.tb-val{border-bottom:.75px solid #888;flex:1;min-height:11px;font-size:8.5px;font-weight:700;padding:0 2px;color:#111}
+.tb-row.issue-row{align-items:flex-start}
+.tb-lbl{white-space:nowrap;min-width:72px;font-size:8.5px;font-weight:600;flex-shrink:0}
+.tb-col{margin:0 2px;font-weight:600;flex-shrink:0}
+.tb-val{border-bottom:.75px solid #888;flex:1;min-width:0;min-height:11px;font-size:8.5px;font-weight:700;padding:0 2px;color:#111}
+.tb-val.issue-val{white-space:normal;overflow-wrap:anywhere;word-break:break-word;line-height:1.3;padding-bottom:2px}
 .tb-type{background:#0d2240;color:#fff;font-size:8px;font-weight:bold;text-align:center;padding:2px;margin-top:4px;letter-spacing:.3px}
 
 .tag-box{background:#fff;border:2px solid #0d2240;width:268px;font-family:Arial,sans-serif;font-size:9px;color:#000;flex-shrink:0;box-shadow:1px 1px 5px rgba(0,0,0,.13)}
@@ -743,7 +745,7 @@ function buildBagTag(d, boxNum, totalBoxes){
     (boxNum < totalBoxes ? d.qty : (parseInt(d.total)%parseInt(d.qty)||parseInt(d.qty))) : d.qty;
   const st = STATUS_DEFS[d.status] || STATUS_DEFS.normal;
   const ribbon = st.color ? `<div class="tag-ribbon ${st.color}">⚠ ${st.short}</div>` : '';
-  const issueRow = d.issue ? `<div class="tb-row"><span class="tb-lbl">ปัญหา/สาเหตุ</span><span class="tb-col">:</span><span class="tb-val" style="white-space:normal">${d.issue}</span></div>` : '';
+  const issueRow = d.issue ? `<div class="tb-row issue-row"><span class="tb-lbl">ปัญหา/สาเหตุ</span><span class="tb-col">:</span><span class="tb-val issue-val">${d.issue}</span></div>` : '';
   return `<div style="display:inline-block;padding:6px;border:1.5px dashed #aaa;border-radius:2px;flex-shrink:0;background:transparent"><div class="tag-bag">
     ${ribbon}
     <div class="tb-hdr">TACHIBANA YAMAMOTO TECHNOLOGY(THAILAND)CO.,LTD</div>
@@ -773,8 +775,8 @@ function buildBoxTag(d, boxNum, lastBoxNum, seqNum, totalBoxes){
   const st = STATUS_DEFS[d.status] || STATUS_DEFS.normal;
   const ribbon = st.color ? `<div class="tag-ribbon tag-ribbon-box ${st.color}">⚠ ${st.short}</div>` : '';
   const issueRow = d.issue ? `<div style="display:flex;align-items:flex-start;border-bottom:1px solid #555;padding:5px 0 2px;gap:4px">
-        <span style="font-size:11px;font-weight:700;white-space:nowrap;min-width:82px">ปัญหา/สาเหตุ</span>
-        <span style="flex:1;font-size:10.5px;font-weight:700;color:#000;white-space:normal">${d.issue}</span>
+        <span style="font-size:11px;font-weight:700;white-space:nowrap;min-width:82px;flex-shrink:0">ปัญหา/สาเหตุ</span>
+        <span style="flex:1;min-width:0;font-size:10.5px;font-weight:700;color:#000;white-space:normal;overflow-wrap:anywhere;word-break:break-word;line-height:1.3">${d.issue}</span>
       </div>` : '';
   // RoHS badge shown in footer row only
   return `<div style="display:inline-block;padding:6px;border:1.5px dashed #aaa;border-radius:2px;flex-shrink:0;background:transparent">
@@ -945,7 +947,7 @@ function buildPrintBagTag(d, boxNum, totalBoxes){
     : (d.qty||'');
   const st = STATUS_DEFS[d.status] || STATUS_DEFS.normal;
   const ribbon = st.color ? `<div class="tag-ribbon-print ${st.color}">⚠ ${st.short}</div>` : '';
-  const issueRow = d.issue ? `<div class="pr" style="border-bottom:none"><span class="pl">ปัญหา/สาเหตุ</span><span class="pv" style="white-space:normal;font-size:12px">${d.issue}</span></div>` : '';
+  const issueRow = d.issue ? `<div class="pr issue-row" style="border-bottom:none"><span class="pl">ปัญหา/สาเหตุ</span><span class="pv issue-val">${d.issue}</span></div>` : '';
   return `<div class="pb">
     ${ribbon}
     <div class="pb-hdr">TACHIBANA YAMAMOTO TECHNOLOGY (THAILAND) CO.,LTD</div>
@@ -972,7 +974,7 @@ function buildPrintBoxTag(d, boxNum, lastBoxNum, seqNum, totalBoxes){
     : (d.qty||'');
   const st = STATUS_DEFS[d.status] || STATUS_DEFS.normal;
   const ribbon = st.color ? `<div class="tag-ribbon-print ${st.color}">⚠ ${st.short}</div>` : '';
-  const issueRow = d.issue ? `<div class="pr2" style="border-bottom:none;align-items:flex-start"><span class="pl2">ปัญหา/สาเหตุ</span><span class="pv2" style="white-space:normal;font-size:11px">${d.issue}</span></div>` : '';
+  const issueRow = d.issue ? `<div class="pr2 issue-row" style="border-bottom:none"><span class="pl2">ปัญหา/สาเหตุ</span><span class="pv2 issue-val">${d.issue}</span></div>` : '';
   return `<div class="px">
     ${ribbon}
     <div class="px-hdr">TACHIBANA YAMAMOTO TECHNOLOGY (THAILAND) CO.,LTD</div>
@@ -1031,6 +1033,24 @@ html, body { background: #fff; font-family: Arial, Helvetica, sans-serif; -webki
   gap: 2.5mm 7mm;
 }
 
+/* ── BAG GRID (SPECIAL STATUS): 2 cols × 4 rows = 8/page ──
+   taller cell (68mm) gives extra room for the status ribbon + ปัญหา/สาเหตุ text */
+.grid-bag-tall {
+  display: grid;
+  grid-template-columns: repeat(2, 96mm);
+  grid-auto-rows: 68mm;
+  gap: 1mm 1mm;
+}
+
+/* ── BOX GRID (SPECIAL STATUS): 2 cols × 3 rows = 6/page ──
+   taller cell (86mm) gives extra room for the status ribbon + ปัญหา/สาเหตุ text */
+.grid-box-tall {
+  display: grid;
+  grid-template-columns: repeat(2, 90mm);
+  grid-auto-rows: 86mm;
+  gap: 2.5mm 7mm;
+}
+
 /* ── CUT GUIDE ── */
 .cut {
   border: 1px dashed #c0c0c0;
@@ -1061,14 +1081,17 @@ html, body { background: #fff; font-family: Arial, Helvetica, sans-serif; -webki
   flex: 1;
   padding: 2px 6px 0;
   display: flex; flex-direction: column;
-  justify-content: space-evenly;
+  justify-content: flex-start;
+  gap: 1.5px;
 }
 .pr {
   display: flex; align-items: flex-end;
   border-bottom: .7px solid #777;
   padding: 1.5px 0;
   gap: 3px;
+  flex-shrink: 0;
 }
+.pr.issue-row { align-items: flex-start; flex-shrink: 1; min-height: 0; }
 .pl {
   white-space: nowrap;
   min-width: 90px;
@@ -1076,11 +1099,17 @@ html, body { background: #fff; font-family: Arial, Helvetica, sans-serif; -webki
   color: #000; flex-shrink: 0;
 }
 .pv {
-  flex: 1;
+  flex: 1; min-width: 0;
   font-size: 16px; font-weight: 600;
   color: #000; padding: 0 1px;
   min-height: 16px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.pv.issue-val {
+  white-space: normal; overflow: hidden; text-overflow: clip;
+  overflow-wrap: anywhere; word-break: break-word;
+  line-height: 1.25; font-size: 12px;
+  display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical;
 }
 .pv.bold  { font-size: 14px; font-weight: 800; }
 .pv.mono  { font-family: 'Courier New', monospace; font-size: 14px; font-weight: 700; }
@@ -1150,7 +1179,8 @@ html, body { background: #fff; font-family: Arial, Helvetica, sans-serif; -webki
   flex: 1;
   padding: 0 8px;
   display: flex; flex-direction: column;
-  justify-content: space-evenly;
+  justify-content: flex-start;
+  gap: 1.5px;
   position: relative; z-index: 1;
 }
 .pr2 {
@@ -1158,7 +1188,9 @@ html, body { background: #fff; font-family: Arial, Helvetica, sans-serif; -webki
   border-bottom: .7px solid #555;
   padding: 1.5px 0 1px;
   gap: 3px;
+  flex-shrink: 0;
 }
+.pr2.issue-row { align-items: flex-start; flex-shrink: 1; min-height: 0; }
 .pr2.br { border-right: .7px solid #555; padding-right: 4px; border-bottom: none; }
 .pr2.pl6 { padding-left: 4px; border-bottom: none; }
 .pr2-split {
@@ -1172,11 +1204,17 @@ html, body { background: #fff; font-family: Arial, Helvetica, sans-serif; -webki
   color: #000; flex-shrink: 0;
 }
 .pv2 {
-  flex: 1;
+  flex: 1; min-width: 0;
   font-size: 16px; font-weight: 600;
   color: #000;
   min-height: 16px; padding: 0 1px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.pv2.issue-val {
+  white-space: normal; overflow: hidden; text-overflow: clip;
+  overflow-wrap: anywhere; word-break: break-word;
+  line-height: 1.22; font-size: 11.5px;
+  display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical;
 }
 .pv2.bold { font-size: 14px; font-weight: 800; }
 .pv2.mono { font-family: 'Courier New', monospace; font-size: 14px; font-weight: 700; }
@@ -1189,9 +1227,9 @@ html, body { background: #fff; font-family: Arial, Helvetica, sans-serif; -webki
 
 /* ── STATUS RIBBON (NG / Sorting / Rework / Wait Confirm / Special Use) ── */
 .tag-ribbon-print {
-  font-size: 20px; font-weight: 900;
-  text-align: center; padding: 5px 3px;
-  letter-spacing: 1.6px; color: #fff;
+  font-size: 15px; font-weight: 900;
+  text-align: center; padding: 3.5px 3px;
+  letter-spacing: 1.2px; color: #fff;
   text-shadow: 0 1px 1px rgba(0,0,0,.25);
   flex-shrink: 0; position: relative; z-index: 1;
 }
@@ -1201,21 +1239,27 @@ html, body { background: #fff; font-family: Arial, Helvetica, sans-serif; -webki
 }
 
 function layoutTagsOnPages(items){
-  const bags  = items.filter(i => i.type === 'bag');
-  const boxes = items.filter(i => i.type === 'box');
-  const PER_BAG  = 10;  // 2 cols × 5 rows
-  const PER_BOX  =  8;  // 2 cols × 4 rows
+  const isSpecial = i => i.status && i.status !== 'normal';
+  const bagsN  = items.filter(i => i.type === 'bag'  && !isSpecial(i));
+  const bagsS  = items.filter(i => i.type === 'bag'  &&  isSpecial(i));
+  const boxesN = items.filter(i => i.type === 'box'  && !isSpecial(i));
+  const boxesS = items.filter(i => i.type === 'box'  &&  isSpecial(i));
+  const PER_BAG      = 10; // 2 cols × 5 rows (normal, 54mm cell)
+  const PER_BAG_TALL =  8; // 2 cols × 4 rows (special status, 68mm cell)
+  const PER_BOX      =  8; // 2 cols × 4 rows (normal, 68mm cell)
+  const PER_BOX_TALL =  6; // 2 cols × 3 rows (special status, 86mm cell)
   let pages = [];
-  // Bag pages
-  for(let i = 0; i < bags.length; i += PER_BAG){
-    const cells = bags.slice(i, i + PER_BAG).map(b => `<div class="cut">${b.html}</div>`).join('');
-    pages.push(`<div class="print-page"><div class="grid-bag">${cells}</div></div>`);
-  }
-  // Box pages
-  for(let i = 0; i < boxes.length; i += PER_BOX){
-    const cells = boxes.slice(i, i + PER_BOX).map(b => `<div class="cut">${b.html}</div>`).join('');
-    pages.push(`<div class="print-page"><div class="grid-box">${cells}</div></div>`);
-  }
+  const pushPages = (list, per, gridClass) => {
+    for(let i = 0; i < list.length; i += per){
+      const cells = list.slice(i, i + per).map(b => `<div class="cut">${b.html}</div>`).join('');
+      pages.push(`<div class="print-page"><div class="${gridClass}">${cells}</div></div>`);
+    }
+  };
+  // Normal-status tags first (dense grid), then special-status tags (taller grid)
+  pushPages(bagsN,  PER_BAG,      'grid-bag');
+  pushPages(bagsS,  PER_BAG_TALL, 'grid-bag-tall');
+  pushPages(boxesN, PER_BOX,      'grid-box');
+  pushPages(boxesS, PER_BOX_TALL, 'grid-box-tall');
   return pages.join('');
 }
 
@@ -1242,7 +1286,7 @@ function printNow(type){
     const n=parseInt(v('bg-copies'))||1;
     const total=parseInt(d.total)||0,qty=parseInt(d.qty)||0;
     const totalC=(total&&qty)?(Math.floor(total/qty)+(total%qty>0?1:0)):n;
-    for(let i=1;i<=n;i++) items.push({type:'bag',html:buildPrintBagTag(d,i,totalC)});
+    for(let i=1;i<=n;i++) items.push({type:'bag',status:d.status,html:buildPrintBagTag(d,i,totalC)});
   } else {
     const startBox=parseInt(v('bx-startbox'))||1;
     const d={cus:v('bx-cus'),name:v('bx-name'),no:v('bx-no'),mat:v('bx-mat'),cuslot:v('bx-cuslot'),lot:v('bx-lot'),del:v('bx-del'),qty:v('bx-qty'),total:v('bx-total'),rohs:document.getElementById('bx-rohs')?.checked||false,status:bxStatus,issue:v('bx-issue')};
@@ -1250,7 +1294,7 @@ function printNow(type){
     const n=parseInt(v('bx-copies'))||1;
     const total=parseInt(d.total)||0,qty=parseInt(d.qty)||0;
     const totalC=(total&&qty)?(Math.floor(total/qty)+(total%qty>0?1:0)):n;
-    for(let i=1;i<=n;i++) items.push({type:'box',html:buildPrintBoxTag(d,startBox+i-1,startBox+totalC-1,i,totalC)});
+    for(let i=1;i<=n;i++) items.push({type:'box',status:d.status,html:buildPrintBoxTag(d,startBox+i-1,startBox+totalC-1,i,totalC)});
   }
   openPrint(items);
 }
@@ -1263,8 +1307,8 @@ function printQueue(){
     const totalC=(total&&qty)?(Math.floor(total/qty)+(total%qty>0?1:0)):item.copies;
     const startBox=item.startBox||1;
     for(let i=1;i<=item.copies;i++){
-      if(item.type==='bag') items.push({type:'bag',html:buildPrintBagTag(item,i,totalC)});
-      else items.push({type:'box',html:buildPrintBoxTag(item,startBox+i-1,startBox+totalC-1,i,totalC)});
+      if(item.type==='bag') items.push({type:'bag',status:item.status,html:buildPrintBagTag(item,i,totalC)});
+      else items.push({type:'box',status:item.status,html:buildPrintBoxTag(item,startBox+i-1,startBox+totalC-1,i,totalC)});
     }
   });
   openPrint(items);
