@@ -66,6 +66,7 @@ body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(
 .lot-hint.ok{background:rgba(26,122,74,.1);border:1px solid rgba(26,122,74,.35);color:#1a7a4a}
 .lot-hint.bad{background:rgba(192,57,43,.1);border:1px solid rgba(192,57,43,.35);color:#8c2e22}
 .lot-hint.typing{background:rgba(26,79,160,.07);border:1px solid rgba(26,79,160,.25);color:var(--blue)}
+.lot-hint.warn{background:rgba(232,160,32,.15);border:1px solid rgba(232,160,32,.5);color:#8a5a00}
 .lot-quick{display:flex;gap:6px;margin-bottom:10px;align-items:center;flex-wrap:wrap;font-size:11px;color:var(--txt3)}
 .lot-quick button{padding:3px 10px;border-radius:20px;border:1px solid var(--bdr2);background:var(--surf);font-family:inherit;font-size:11.5px;cursor:pointer;color:var(--txt2)}
 .lot-quick button:hover{border-color:var(--blue);color:var(--blue)}
@@ -949,7 +950,18 @@ function renderBox(){
 //  LOT No. VALIDATION  (ปี1 + เดือน2 + วัน2 + กะ/ม้วน1)
 //  เช่น 10 พ.ย. 2026 กะ1 → 6 11 10 1 = 611101
 // ══════════════════════════════════════════
+// ตรวจรูปแบบ + เตือนถ้าตัวเลขปี (หลักแรก) ไม่ตรงกับปีปัจจุบัน
 function lotCheck(val){
+  const r = lotCheckCore(val);
+  val = (val||'').trim();
+  const curYear = new Date().getFullYear();
+  if((r.state==='typing'||r.state==='ok') && val[0]!==String(curYear%10)){
+    const yr = Math.floor(curYear/10)*10 + (+val[0]);
+    return {state:'warn', msg:`⚠️ ปีไม่ตรงกับปัจจุบัน — LOT ขึ้นต้นด้วย "${val[0]}" (= ปี ${yr}) แต่ปีนี้คือ ${curYear} ต้องขึ้นต้นด้วย "${curYear%10}"`+(r.state==='typing'?` · กำลังพิมพ์ (${val.length}/6)`:'')};
+  }
+  return r;
+}
+function lotCheckCore(val){
   val = (val||'').trim();
   if(!val) return {state:'empty'};
   if(!/^\d+$/.test(val)) return {state:'bad', msg:'⚠️ LOT ต้องเป็นตัวเลขเท่านั้น เช่น 611101'};
@@ -980,7 +992,7 @@ function setLot(p, sft){
 }
 function confirmLot(p){
   const r = checkLot(p);
-  if(r.state==='bad'||r.state==='typing')
+  if(r.state==='bad'||r.state==='typing'||r.state==='warn')
     return confirm(`${r.msg}\n\nLOT รูปแบบนี้อาจไม่ถูกต้อง — ต้องการดำเนินการต่อหรือไม่?`);
   return true;
 }
