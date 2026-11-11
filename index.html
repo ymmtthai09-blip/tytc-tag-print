@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>TYTC Tag Print System</title>
+<title>TYTC TAG PRINT SYSTEM</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -205,7 +205,7 @@ body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(
 <div class="topbar">
   <div class="brand">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-    TYT <em>TAG</em> PRINT SYSTEM
+    TYTC <em>TAG</em> PRINT SYSTEM
   </div>
   <div id="db-status" class="db-badge"><div class="dot"></div> ยังไม่โหลด Excel</div>
 </div>
@@ -265,13 +265,14 @@ body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(
           <!-- Customer filter -->
           <div class="fld">
             <label>Customer</label>
-            <input id="bg-cus" placeholder="กรองตามลูกค้า (เว้นว่างเพื่อแสดงทั้งหมด)" oninput="filterBagList()" autocomplete="off">
+            <input id="bg-cus" placeholder="คลิกเพื่อเลือก หรือพิมพ์ค้นหาลูกค้า…" oninput="filterBagList()" onfocus="filterBagList()" onclick="filterBagList()" autocomplete="off">
+            <div class="dd" id="bg-cus-dd"></div>
           </div>
 
           <!-- Part Name filter with dropdown -->
           <div class="fld">
             <label>Part Name</label>
-            <input id="bg-name" placeholder="พิมพ์เพื่อค้นหา…" oninput="searchBag()" autocomplete="off">
+            <input id="bg-name" placeholder="คลิกเพื่อเลือก หรือพิมพ์ค้นหา…" oninput="searchBag()" onfocus="searchBag()" onclick="searchBag()" autocomplete="off">
             <div class="dd" id="bg-dd"></div>
           </div>
 
@@ -370,13 +371,13 @@ body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(
 
           <div class="fld">
             <label>Customer</label>
-            <input id="bx-cus" placeholder="กรองตามลูกค้า…" oninput="filterBoxList()" autocomplete="off">
+            <input id="bx-cus" placeholder="คลิกเพื่อเลือก หรือพิมพ์ค้นหาลูกค้า…" oninput="filterBoxList()" onfocus="filterBoxList()" onclick="filterBoxList()" autocomplete="off">
             <div class="dd" id="bx-cus-dd"></div>
           </div>
 
           <div class="fld">
             <label>Part Name</label>
-            <input id="bx-name" placeholder="พิมพ์เพื่อค้นหา…" oninput="searchBox()" autocomplete="off">
+            <input id="bx-name" placeholder="คลิกเพื่อเลือก หรือพิมพ์ค้นหา…" oninput="searchBox()" onfocus="searchBox()" onclick="searchBox()" autocomplete="off">
             <div class="dd" id="bx-dd"></div>
           </div>
 
@@ -650,59 +651,52 @@ function getFilteredBox(){
   );
 }
 
-function filterBagList(){ searchBag(); }
-function filterBoxList(){
-  // also show customer dropdown
-  const q = document.getElementById('bx-cus').value.toLowerCase().trim();
-  const el = document.getElementById('bx-cus-dd');
-  if(!q){ el.classList.remove('open'); searchBox(); return; }
-  const matches = db.customers.filter(c=>c.toLowerCase().includes(q)).slice(0,8);
-  if(!matches.length){ el.classList.remove('open'); searchBox(); return; }
-  el.innerHTML = matches.map(c=>`<div class="dd-item" onclick="selCus('${c.replace(/'/g,"\\'")}')"><span>${c}</span></div>`).join('');
+function filterBagList(){ showCusDD('bg'); }
+function filterBoxList(){ showCusDD('bx'); }
+
+// Customer dropdown: lists every customer on click/focus, narrows as you type
+function showCusDD(p){
+  const el = document.getElementById(p+'-cus-dd');
+  const pd = document.getElementById(p+'-dd'); if(pd) pd.classList.remove('open');
+  const blank = p==='bg' ? bgBlank : bxBlank;
+  if(blank){ el.classList.remove('open'); return; }
+  if(!db.customers.length){ el.innerHTML='<div class="dd-empty">ยังไม่ได้โหลดไฟล์ Excel</div>'; el.classList.add('open'); return; }
+  const q = document.getElementById(p+'-cus').value.toLowerCase().trim();
+  const list = db.customers.filter(c=>!q || c.toLowerCase().includes(q));
+  if(!list.length){ el.innerHTML='<div class="dd-empty">ไม่พบลูกค้า</div>'; el.classList.add('open'); return; }
+  el.innerHTML = list.slice(0,200).map(c=>
+    `<div class="dd-item" onclick="selCus('${p}',${db.customers.indexOf(c)})"><span>${c}</span></div>`
+  ).join('') + (list.length>200 ? `<div class="dd-empty">แสดง 200 จาก ${list.length} — พิมพ์เพื่อค้นหาเพิ่ม</div>` : '');
   el.classList.add('open');
-  searchBox();
 }
 
-function selCus(name){
-  document.getElementById('bx-cus').value = name;
-  document.getElementById('bx-cus-dd').classList.remove('open');
-  searchBox();
+function selCus(p, idx){
+  document.getElementById(p+'-cus').value = db.customers[idx];
+  document.getElementById(p+'-cus-dd').classList.remove('open');
+  if(p==='bg') searchBag(); else searchBox();
 }
 
-function searchBag(){
-  if(bgBlank){ document.getElementById('bg-dd').classList.remove('open'); renderBag(); return; }
-  const filtered = getFilteredBag().slice(0,10);
-  const el = document.getElementById('bg-dd');
-  const q = document.getElementById('bg-name').value.trim();
-  if(!q && !document.getElementById('bg-cus').value.trim()){ el.classList.remove('open'); return; }
-  if(!filtered.length){ el.innerHTML='<div class="dd-empty">ไม่พบสินค้า</div>'; el.classList.add('open'); return; }
-  el.innerHTML = filtered.map((p,i)=>
-    `<div class="dd-item" onclick="selBagPart(${db.products.indexOf(p)})">
-      <span>${p.name}</span>
-      <span class="dd-meta">${p.no} · ${p.mat}</span>
+// Part dropdown: lists every product (filtered by Customer) on click/focus, narrows as you type
+function partDD(p){
+  const blank = p==='bg' ? bgBlank : bxBlank;
+  const el = document.getElementById(p+'-dd');
+  const cd = document.getElementById(p+'-cus-dd'); if(cd) cd.classList.remove('open');
+  if(blank){ el.classList.remove('open'); return; }
+  if(!db.products.length){ el.innerHTML='<div class="dd-empty">ยังไม่ได้โหลดไฟล์ Excel</div>'; el.classList.add('open'); return; }
+  const list = p==='bg' ? getFilteredBag() : getFilteredBox();
+  if(!list.length){ el.innerHTML='<div class="dd-empty">ไม่พบสินค้า</div>'; el.classList.add('open'); return; }
+  const sel = p==='bg' ? 'selBagPart' : 'selBoxPart';
+  el.innerHTML = list.slice(0,200).map(x=>
+    `<div class="dd-item" onclick="${sel}(${db.products.indexOf(x)})">
+      <span>${x.name}</span>
+      <span class="dd-meta">${x.no} · ${x.mat} · ${x.cus}</span>
     </div>`
-  ).join('');
-  el._list = filtered;
+  ).join('') + (list.length>200 ? `<div class="dd-empty">แสดง 200 จาก ${list.length} — พิมพ์เพื่อค้นหาเพิ่ม</div>` : '');
   el.classList.add('open');
-  renderBag();
 }
 
-function searchBox(){
-  if(bxBlank){ document.getElementById('bx-dd').classList.remove('open'); renderBox(); return; }
-  const filtered = getFilteredBox().slice(0,10);
-  const el = document.getElementById('bx-dd');
-  const q = document.getElementById('bx-name').value.trim();
-  if(!q && !document.getElementById('bx-cus').value.trim()){ el.classList.remove('open'); return; }
-  if(!filtered.length){ el.innerHTML='<div class="dd-empty">ไม่พบสินค้า</div>'; el.classList.add('open'); return; }
-  el.innerHTML = filtered.map((p,i)=>
-    `<div class="dd-item" onclick="selBoxPart(${db.products.indexOf(p)})">
-      <span>${p.name}</span>
-      <span class="dd-meta">${p.no} · ${p.mat} · ${p.cus}</span>
-    </div>`
-  ).join('');
-  el.classList.add('open');
-  renderBox();
-}
+function searchBag(){ partDD('bg'); renderBag(); }
+function searchBox(){ partDD('bx'); renderBox(); }
 
 function selBagPart(idx){
   const p = db.products[idx];
@@ -744,7 +738,7 @@ function toggleBlank(mode){
   } else {
     no.readOnly = true;  no.style.background = 'var(--surf2)';  no.placeholder  = '';
     mat.readOnly = true; mat.style.background = 'var(--surf2)'; mat.placeholder = '';
-    name.placeholder = 'พิมพ์เพื่อค้นหา…';
+    name.placeholder = 'คลิกเพื่อเลือก หรือพิมพ์ค้นหา…';
   }
   if(mode==='bag'){ bgBlank = on; renderBag(); }
   else { bxBlank = on; renderBox(); }
@@ -1386,7 +1380,7 @@ function layoutTagsOnPages(items){
 function openPrint(tagItems){
   const pagesHtml = layoutTagsOnPages(tagItems);
   const w = window.open('', '_blank', 'width=1050,height=820');
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Print Tags — TYT</title>${getPrintStyles()}</head><body>${pagesHtml}<script>setTimeout(()=>{window.print();},600)<\/script></body></html>`);
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Print Tags — TYTC</title>${getPrintStyles()}</head><body>${pagesHtml}<script>setTimeout(()=>{window.print();},600)<\/script></body></html>`);
   w.document.close();
 }
 
