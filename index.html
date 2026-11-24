@@ -190,6 +190,25 @@ body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(
 .txb-footer{text-align:right;font-size:7px;color:#888;margin-top:5px}
 .txb-type{background:#0d2240;color:#fff;font-size:8px;font-weight:bold;text-align:center;padding:2px;margin-top:4px;letter-spacing:.3px}
 
+/* FIFO RECEIVING TAG FORM */
+.fifo-legend{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px}
+.fifo-chip{display:flex;align-items:center;gap:5px;padding:3px 9px;border:1.5px solid var(--bdr2);border-radius:20px;font-size:11px;cursor:pointer;background:var(--surf);color:var(--txt2);transition:all .12s;white-space:nowrap}
+.fifo-chip i{width:12px;height:12px;border-radius:3px;border:1px solid rgba(0,0,0,.28);display:inline-block}
+.fifo-chip:hover{border-color:var(--blue);color:var(--blue)}
+.fifo-chip.sel{border-color:var(--blue);background:rgba(26,79,160,.08);color:var(--blue);font-weight:600;box-shadow:0 0 0 2px rgba(26,79,160,.18)}
+.fifo-note{margin-top:7px;font-size:12px;color:var(--txt);padding:6px 9px;background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--rs)}
+
+#prev-rm .rmt-ck,#prev-rm .rmt-circle{cursor:pointer}
+.chk-row{display:flex;align-items:center;gap:6px;margin-bottom:5px;flex-wrap:wrap}
+.chk-row .chk-t{font-size:11px;color:var(--txt3);width:100%;margin:0}
+.chk-chip{padding:4px 11px;border-radius:20px;border:1.5px solid var(--bdr2);background:var(--surf);font-family:inherit;font-size:12px;cursor:pointer;color:var(--txt2);transition:all .12s}
+.chk-chip:hover{border-color:var(--blue);color:var(--blue)}
+.chk-chip.sel.ok{background:var(--green);border-color:var(--green);color:#fff}
+.chk-chip.sel.ng{background:var(--red);border-color:var(--red);color:#fff}
+.chk-chip.sel.qc{background:#0a7a3d;border-color:#0a7a3d;color:#fff;font-weight:600}
+.sup-hint{font-size:11px;color:var(--txt3);margin:-4px 0 8px;line-height:1.4}
+.dd-sec{padding:4px 10px;font-size:10px;font-weight:600;color:var(--txt3);background:var(--surf2);text-transform:uppercase;letter-spacing:.4px}
+
 /* PRINT */
 @media print{
   body{background:#fff}
@@ -214,20 +233,22 @@ body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(
 
   <!-- EXCEL LOADER -->
   <div class="card" style="margin-bottom:1.2rem">
-    <div class="card-hdr">📊 โหลดไฟล์ข้อมูลสินค้า (Excel)</div>
+    <div class="card-hdr">📊 โหลดไฟล์ข้อมูล (Excel) — สินค้า และ วัตถุดิบ</div>
     <div class="card-body">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start">
         <div>
           <div class="dropzone" id="dropzone" onclick="document.getElementById('file-input').click()" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropFile(event)">
             <div class="dropzone-ico">📂</div>
-            <p><strong>คลิกหรือลากไฟล์ Excel มาวางที่นี่</strong></p>
-            <small>List_Part.xlsx — Sheet: List — อัปเดตข้อมูลแล้วโหลดใหม่ได้เสมอ</small>
+            <p><strong>คลิกหรือลากไฟล์ Excel มาวางที่นี่</strong> (เลือกได้หลายไฟล์พร้อมกัน)</p>
+            <small>List_Part.xlsx (สินค้า) · List Part - Material.xlsx (วัตถุดิบ) — ระบบแยกชนิดไฟล์ให้อัตโนมัติ โหลดใหม่ได้เสมอ</small>
           </div>
-          <input type="file" id="file-input" accept=".xlsx,.xls" onchange="loadExcel(this.files[0])">
+          <input type="file" id="file-input" accept=".xlsx,.xls" multiple onchange="loadExcel(this.files)">
           <div style="background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--rs);padding:9px 11px;font-size:11px;color:var(--txt2);line-height:1.8">
             <strong style="color:var(--txt)">📋 โครงสร้างที่รองรับ (List_Part.xlsx):</strong><br>
             Sheet: <code style="background:#e8ecf2;padding:1px 5px;border-radius:3px">List</code> &nbsp;|&nbsp;
             คอลัมน์: Customer · Part Name · Part No. · Material · Qty/Box · Qty/Bag · PIC · Type×6<br>
+            <strong style="color:var(--txt)">📥 วัตถุดิบ (List Part - Material.xlsx):</strong><br>
+            คอลัมน์: Customer · Part Name · Part No. · Material · Thickness x wide (mm) · x Coil · x Sheet (mm)<br>
             <span style="color:var(--green);font-weight:600">✓ โหลดไฟล์ได้เลย ไม่ต้องแก้ไขโครงสร้าง</span>
           </div>
         </div>
@@ -246,7 +267,8 @@ body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(
   <div class="tabs">
     <button class="tbtn act" onclick="sw('bag',this)">🛍 Tag หน้าถุง</button>
     <button class="tbtn" onclick="sw('box',this)">📦 Tag หน้า Box</button>
-    <button class="tbtn" onclick="sw('queue',this)">🖨 คิวพิมพ์ <span class="badge" id="qbadge">0</span></button>
+    <button class="tbtn" onclick="sw('rm',this)">📥 Tag รับวัตถุดิบ (FIFO)</button>
+    <button class="tbtn" id="tab-queue" onclick="sw('queue',this)">🖨 คิวพิมพ์ <span class="badge" id="qbadge">0</span></button>
   </div>
 
   <!-- ══ TAB BAG ══ -->
@@ -471,6 +493,101 @@ body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(
     </div>
   </div>
 
+  <!-- ══ TAB RM (FIFO RECEIVING) ══ -->
+  <div id="t-rm" style="display:none">
+    <div class="grid">
+      <div class="card">
+        <div class="card-hdr">✏️ กรอกข้อมูล — Tag รับวัตถุดิบ (FIFO)</div>
+        <div class="card-body">
+
+          <div class="paper-hint show yellow" id="rm-nodata" style="margin:0 0 10px">⚠️ ยังไม่ได้โหลดไฟล์ <b>&nbsp;List Part – Material&nbsp;</b> (โหลดที่กล่องด้านบน) — ยังกรอกเองหรือใช้ Tag เปล่าได้</div>
+
+          <div class="blank-toggle">
+            <input type="checkbox" id="rm-blank" onchange="toggleRmBlank()" style="width:15px;height:15px;accent-color:#5b4fd6;cursor:pointer">
+            <label for="rm-blank" style="font-size:12.5px;font-weight:600;color:#5b4fd6;cursor:pointer;text-transform:none;letter-spacing:0">📝 Tag เปล่า — กำหนดข้อมูลเอง (ไม่ค้นหาจากฐานข้อมูล)</label>
+          </div>
+
+          <div class="fld" id="rm-cus-fld">
+            <label>Customer <span style="text-transform:none;font-weight:400;color:var(--txt3)">(ใช้กรองรายการเท่านั้น ไม่พิมพ์บน Tag)</span></label>
+            <input id="rm-cus" placeholder="คลิกเพื่อเลือก หรือพิมพ์ค้นหาลูกค้า…" oninput="rmCusDD()" onfocus="rmCusDD()" onclick="rmCusDD()" autocomplete="off">
+            <div class="dd" id="rm-cus-dd"></div>
+          </div>
+          <div class="fld" style="margin-bottom:2px">
+            <label>NAME of Mat'l <span style="text-transform:none;font-weight:400;color:var(--txt3)">(ค้นหาได้ทั้ง Material / Part Name / Part No.)</span></label>
+            <input id="rm-name" placeholder="คลิกเพื่อเลือก หรือพิมพ์ค้นหา Material / Part…" oninput="rmNameInput()" onfocus="rmMatDD()" onclick="rmMatDD()" autocomplete="off">
+            <div class="dd" id="rm-dd"></div>
+          </div>
+          <div id="rm-used" style="font-size:11px;color:var(--txt3);margin:0 0 8px;line-height:1.4"></div>
+          <div class="fld"><label>SPEC. Mat'l <span style="text-transform:none;font-weight:400;color:var(--txt3)">(ความหนา x กว้าง)</span></label><input id="rm-spec" placeholder="เช่น 2.0 x 49" oninput="rmRender()"></div>
+
+          <div class="r2">
+            <div class="fld"><label>DATE (วันที่รับ)</label><input type="date" id="rm-date" oninput="rmDateChanged()"></div>
+            <div class="fld"><label>SUPPLIER</label><input id="rm-sup" placeholder="คลิกเลือก หรือพิมพ์ชื่อผู้ขาย" oninput="rmSupDD();rmRender()" onfocus="rmSupDD()" onclick="rmSupDD()" autocomplete="off"><div class="dd" id="rm-sup-dd"></div></div>
+          </div>
+
+          <div class="sup-hint" id="rm-sup-hint"></div>
+
+          <div class="fld">
+            <label>สี FIFO (ตาม WI) <span style="text-transform:none;font-weight:400;color:var(--txt3)">— ระบบเลือกสีตามเดือนของวันที่รับ เปลี่ยนเองได้</span></label>
+            <div class="fifo-legend" id="rm-legend"></div>
+            <div class="fifo-note" id="rm-color-note"></div>
+          </div>
+
+          <div class="fld" style="margin-bottom:0">
+            <label>LOT No. <span style="text-transform:none;font-weight:400;color:var(--txt3)">(ปี·เดือน·วัน เช่น 261124 — เติมให้อัตโนมัติจากวันที่รับ)</span></label>
+            <input id="rm-lot" placeholder="เช่น 261124" inputmode="numeric" oninput="rmLotInput()">
+          </div>
+          <div class="lot-hint" id="rm-lot-hint"></div>
+          <div class="lot-quick">
+            <button type="button" onclick="rmLotFromDate()">ใช้ตามวันที่รับ</button>
+            <label style="display:flex;align-items:center;gap:5px;cursor:pointer;text-transform:none;letter-spacing:0;font-size:11.5px;color:var(--txt2)"><input type="checkbox" id="rm-showlot" checked onchange="rmRender()" style="accent-color:var(--blue)"> พิมพ์ LOT บน Tag</label>
+          </div>
+
+          <div class="r2">
+            <div class="fld"><label>Q'TY (Kgs.)</label><input id="rm-kgs" inputmode="decimal" placeholder="น้ำหนัก" oninput="rmRender()"></div>
+            <div class="fld"><label>จำนวน</label>
+              <div style="display:flex;gap:6px"><input id="rm-coil" inputmode="numeric" placeholder="จำนวน" oninput="rmRender()" style="flex:1;min-width:0">
+              <select id="rm-unit" onchange="rmRender()" style="width:84px"><option>Coil</option><option>Sheet</option></select></div>
+            </div>
+          </div>
+          <div class="r2">
+            <div class="fld"><label>P / O</label><input id="rm-po" placeholder="เลขที่ PO" oninput="rmRender()"></div>
+            <div class="fld"><label>INSPEC By</label><input id="rm-pic" placeholder="ผู้ตรวจรับ" oninput="rmRender()"></div>
+          </div>
+
+          <div class="fld" style="margin-top:4px">
+            <label>DETAIL — ผลการตรวจรับ <span style="text-transform:none;font-weight:400;color:var(--txt3)">(กดเพื่อติ๊ก กดซ้ำเพื่อยกเลิก — หรือกดที่ช่องบน Preview ก็ได้)</span></label>
+            <div style="display:flex;gap:6px;margin:3px 0 8px;flex-wrap:wrap">
+              <button type="button" class="chk-chip" onclick="rmAllPass()">✓ ผ่านทุกข้อ + QC Pass</button>
+              <button type="button" class="chk-chip" onclick="rmClearChk()">ล้างการติ๊ก</button>
+            </div>
+            <div id="rm-chk"></div>
+          </div>
+
+          <hr style="border:none;border-top:1px solid var(--bdr);margin:10px 0">
+          <button type="button" class="btn btn-out" style="margin:0 0 10px;padding:6px;font-size:12px" onclick="rmDownloadTemplate()">⬇️ ดาวน์โหลดไฟล์ Excel วัตถุดิบ + คอลัมน์ Supplier (กรอกแล้วอัปโหลดกลับได้)</button>
+          <div class="copies-row">
+            <label>จำนวนใบที่จะพิมพ์:</label>
+            <input type="number" id="rm-copies" value="1" min="1" max="200" oninput="rmRender()">
+          </div>
+
+          <button class="btn btn-acc" onclick="addQ('rm')">➕ เพิ่มเข้าคิวพิมพ์</button>
+          <button class="btn btn-blue" onclick="printNow('rm')">🖨 พิมพ์ทันที</button>
+          <button class="btn btn-out" onclick="clrRm()">🗑 ล้างฟอร์ม</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div class="prev-toolbar">
+            <h3>Preview — Tag รับวัตถุดิบ</h3>
+            <div class="tag-count" id="rm-tc">1 ใบ</div>
+          </div>
+          <div class="canvas" id="prev-rm"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ══ TAB QUEUE ══ -->
   <div id="t-queue" style="display:none">
     <div class="card">
@@ -507,7 +624,7 @@ body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(
 //  STATE
 // ══════════════════════════════════════════
 const TYPES = ['AKJ217C120','AKJ217C307','AKJ217C312','AKJ217C316','AKJ217C403','AKJ217C409'];
-let db = { products:[], customers:[] };
+let db = { products:[], customers:[], materials:[], matCustomers:[], matGroups:[], suppliers:[] };
 let queue = [];
 let bgType = null; // selected type for bag
 let bxType = null; // selected type for box
@@ -526,56 +643,150 @@ let bxStatus = 'normal'; // selected status for box
 let bgBlank = false; // blank-tag (manual entry) mode for bag
 let bxBlank = false; // blank-tag (manual entry) mode for box
 
+const RM_CSS = `
+.rmt{width:90mm;height:126mm;background:#fff;border:1.5px solid #111;display:flex;flex-direction:column;font-family:Tahoma,'IBM Plex Sans Thai',Arial,sans-serif;color:#000;flex-shrink:0;box-sizing:border-box;overflow:hidden;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.cut .rmt{width:100%;height:100%}
+.rmt-hdr{background:var(--c);color:var(--tc);display:flex;align-items:center;gap:7px;padding:4px 7px;border-bottom:1.5px solid #111;flex:0 0 auto}
+.rmt-logo{width:34px;height:34px;flex:0 0 34px;border-radius:50%;background:#fff url(data:image/png;base64,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) center/80% no-repeat}
+.rmt-co{font:900 12.5px/1.25 'Arial Black',Arial,sans-serif;color:var(--tc);letter-spacing:.2px}
+.rmt-rec{background:var(--c);color:var(--tc);font:900 33px/1 'Arial Black',Arial,sans-serif;text-align:center;padding:6px 0 5px;border-bottom:1.5px solid #111;flex:0 0 auto;letter-spacing:.5px}
+.rmt-body{flex:1;display:flex;flex-direction:column;padding:2px 8px 0;min-height:0}
+.rmt-fields{flex:1.55;display:flex;flex-direction:column;justify-content:space-around;min-height:0}
+.rmt-row{display:flex;align-items:flex-end;gap:4px;font-size:11px;line-height:1.1;min-height:0}
+.rmt-l{white-space:nowrap;font-size:11px;flex:0 0 auto}
+.rmt-l2{white-space:nowrap;font-size:11px;flex:0 0 auto;margin-left:4px}
+.rmt-v{flex:1;min-width:0;border-bottom:.8px solid #000;font-size:12.5px;font-weight:700;min-height:14px;padding:0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rmt-v.sm{flex:0 0 auto;min-width:48px;text-align:right}
+.rmt-u{white-space:nowrap;font-size:11px;flex:0 0 auto}
+.rmt-pi{display:flex;align-items:stretch;gap:6px}
+.rmt-pi-l{flex:1;display:flex;flex-direction:column;justify-content:space-around;gap:7px;min-width:0}
+.rmt-circle{flex:0 0 17mm;width:17mm;height:17mm;border:1.4px solid #000;border-radius:50%;align-self:center;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.rmt-tick{display:block;width:8px;height:15px;border:solid #0a7a3d;border-width:0 3.6px 3.6px 0;transform:rotate(45deg);margin-top:-4px}
+.rmt-qc{font-size:7.5px;font-weight:900;color:#0a7a3d;letter-spacing:.3px;margin-top:2px;line-height:1}
+.rmt-det{flex:1.45;display:flex;flex-direction:column;justify-content:space-around;min-height:0;padding-bottom:1px}
+.rmt-dt{font-size:10.5px;font-weight:800;text-decoration:underline;margin-bottom:1px}
+.rmt-dr{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding-left:10px}
+.rmt-dr.three .c2{display:flex;gap:10px}
+.rmt-ck{display:flex;align-items:center;gap:5px;font-size:10.5px;white-space:nowrap}
+.rmt-ck i{position:relative;width:11px;height:11px;border:1.3px solid #000;border-radius:1px;flex:0 0 11px;display:inline-block}
+.rmt-ck i.on::after{content:'';position:absolute;left:2.6px;top:-4px;width:4px;height:9px;border:solid #000;border-width:0 2.3px 2.3px 0;transform:rotate(45deg)}
+.rmt-foot{text-align:right;font-size:9px;padding:0 6px 2px;flex:0 0 auto;color:#111}
+.rm-wrap{display:inline-block;padding:6px;border:1.5px dashed #aaa;border-radius:2px;flex-shrink:0}
+.grid-rm{display:grid;grid-template-columns:repeat(2,96mm);grid-auto-rows:136mm;gap:1mm 1mm}
+`;
+
 // ══════════════════════════════════════════
 //  EXCEL LOAD
 // ══════════════════════════════════════════
 function dragOver(e){ e.preventDefault(); document.getElementById('dropzone').classList.add('drag'); }
 function dragLeave(){ document.getElementById('dropzone').classList.remove('drag'); }
-function dropFile(e){ e.preventDefault(); dragLeave(); const f=e.dataTransfer.files[0]; if(f) loadExcel(f); }
+function dropFile(e){ e.preventDefault(); dragLeave(); loadExcel(e.dataTransfer.files); }
 
-function loadExcel(file){
-  if(!file) return;
+// รับได้หลายไฟล์พร้อมกัน — ตรวจชนิดไฟล์อัตโนมัติจากหัวตาราง
+//   List_Part.xlsx            → รายการสินค้า (Tag ถุง / Tag Box)
+//   List_Part - Material.xlsx → รายการวัตถุดิบ (Tag รับวัตถุดิบ FIFO)
+function loadExcel(files){
+  if(!files) return;
+  const list = (files.length!==undefined && !files.name) ? Array.from(files) : [files];
+  list.forEach(readExcelFile);
+}
+function readExcelFile(file){
   const reader = new FileReader();
   reader.onload = e => {
     try{
       const wb = XLSX.read(e.target.result,{type:'binary'});
-      db.products = []; db.customers = [];
       const shName = wb.SheetNames.find(n=>/list/i.test(n)) || wb.SheetNames[0];
       const raw = XLSX.utils.sheet_to_json(wb.Sheets[shName],{header:1});
-      // find header row
-      let hi = raw.findIndex(r=>r && r.some(c=>typeof c==='string' && /customer|part.?name/i.test(c)));
-      if(hi<0) hi=1;
-      raw.slice(hi+1).filter(r=>r&&(r[0]||r[1])).forEach(r=>{
-        const cus  = s(r[0]), name = s(r[1]), no = s(r[2]);
-        const mat  = s(r[3]), qBox = s(r[4]), qBag = s(r[5]), pic = s(r[6]);
-        const types= [s(r[7]),s(r[8]),s(r[9]),s(r[10]),s(r[11]),s(r[12])];
-        if(name||no) db.products.push({cus,name,no,mat,qBox,qBag,pic,types});
-        if(cus && !db.customers.includes(cus)) db.customers.push(cus);
-      });
-      // update UI
-      const el = document.getElementById('db-status');
-      el.className='db-badge ok';
-      el.innerHTML=`<div class="dot"></div> ${db.products.length} สินค้า · ${db.customers.length} ลูกค้า`;
-      showPreviewTable(db.products);
-      buildTypeButtons('bg-types','bag');
-      buildTypeButtons('bx-types','box');
-    } catch(err){ alert('โหลดไฟล์ไม่สำเร็จ: '+err.message); }
+      const isMat = raw.slice(0,8).some(r=>r && r.some(c=>typeof c==='string' && /thickness/i.test(c)));
+      if(isMat) parseMaterialList(raw); else parseProductList(raw);
+      refreshDbUI();
+    } catch(err){ alert('โหลดไฟล์ '+(file.name||'')+' ไม่สำเร็จ: '+err.message); }
   };
   reader.readAsBinaryString(file);
 }
 
+function parseProductList(raw){
+  db.products = []; db.customers = [];
+  let hi = raw.findIndex(r=>r && r.some(c=>typeof c==='string' && /customer|part.?name/i.test(c)));
+  if(hi<0) hi=1;
+  raw.slice(hi+1).filter(r=>r&&(r[0]||r[1])).forEach(r=>{
+    const cus  = s(r[0]), name = s(r[1]), no = s(r[2]);
+    const mat  = s(r[3]), qBox = s(r[4]), qBag = s(r[5]), pic = s(r[6]);
+    const types= [s(r[7]),s(r[8]),s(r[9]),s(r[10]),s(r[11]),s(r[12])];
+    if(name||no) db.products.push({cus,name,no,mat,qBox,qBag,pic,types});
+    if(cus && !db.customers.includes(cus)) db.customers.push(cus);
+  });
+}
+
+// List Part – Material : Customer · Part Name · Part No. · Material · Thickness x wide (mm) · x Coil · x Sheet (mm) · [Supplier]
+// คอลัมน์ Supplier (ถ้ามี) หาจากชื่อหัวตาราง "Supplier" — ใส่ได้หลายราย คั่นด้วย ; หรือ | หรือขึ้นบรรทัดใหม่
+function parseMaterialList(raw){
+  db.materials = []; db.matCustomers = []; db.matGroups = []; db.suppliers = [];
+  let hi = raw.findIndex(r=>r && r.some(c=>typeof c==='string' && /thickness/i.test(c)));
+  if(hi<0) hi=1;
+  const hdr = raw[hi]||[];
+  const supIdx = hdr.findIndex(c=>typeof c==='string' && /supplier|ผู้ขาย|ซัพพลาย/i.test(c));
+  const norm = t => s(t).replace(/\s*[x×]\s*/gi,' x ').replace(/\s+/g,' ').trim();
+  const uni = (arr,more)=>{ more.forEach(x=>{ if(x && !arr.includes(x)) arr.push(x); }); };
+  const map = {}, grade = {};
+  raw.slice(hi+1).filter(r=>r&&(r[0]||r[1]||r[2]||r[3])).forEach(r=>{
+    const cus=s(r[0]), name=s(r[1]), no=s(r[2]), mat=s(r[3]).replace(/\s+/g,' ');
+    const size=norm(r[4]), coil=s(r[5]), sheet=s(r[6]);
+    if(!mat) return;
+    const sups = supIdx>=0 ? s(r[supIdx]).split(/[;|\n]+/).map(x=>x.trim()).filter(Boolean) : [];
+    const unit = /^c/i.test(coil) ? 'Coil' : (sheet ? 'Sheet' : 'Coil');
+    const spec = size + (sheet ? ' x '+sheet : '');
+    db.materials.push({cus,name,no,mat,size,coil,sheet,unit,spec,sups});
+    if(cus && !db.matCustomers.includes(cus)) db.matCustomers.push(cus);
+    const key = [mat,spec,unit].join('|');
+    if(!map[key]){ map[key] = {mat,spec,unit,parts:[],sups:[]}; db.matGroups.push(map[key]); }
+    map[key].parts.push({cus,name,no});
+    uni(map[key].sups, sups);
+    grade[mat] = grade[mat]||[]; uni(grade[mat], sups);
+    uni(db.suppliers, sups);
+  });
+  // Supplier ผูกกับ Material+ขนาด ก่อน ถ้าไม่มีให้ใช้ Supplier ของ Material เกรดเดียวกัน
+  db.matGroups.forEach(g=>{ g.supEff = g.sups.length ? g.sups : (grade[g.mat]||[]); });
+  db.suppliers.sort((x,y)=>x.localeCompare(y));
+  db.matGroups.sort((x,y)=>x.mat.localeCompare(y.mat)||x.spec.localeCompare(y.spec,undefined,{numeric:true}));
+}
+
+function refreshDbUI(){
+  const el = document.getElementById('db-status');
+  const bits = [];
+  if(db.products.length)  bits.push(`${db.products.length} สินค้า · ${db.customers.length} ลูกค้า`);
+  if(db.materials.length) bits.push(`${db.materials.length} รายการวัตถุดิบ`);
+  if(bits.length){ el.className='db-badge ok'; el.innerHTML=`<div class="dot"></div> ${bits.join(' · ')}`; }
+  showPreviewTable();
+  buildTypeButtons('bg-types','bag');
+  buildTypeButtons('bx-types','box');
+  const nd = document.getElementById('rm-nodata');
+  if(nd) nd.style.display = db.matGroups.length ? 'none' : 'flex';
+}
+
 function s(v){ return v!=null ? v.toString().trim() : ''; }
 
-function showPreviewTable(rows){
+function showPreviewTable(){
+  if(!db.products.length && !db.materials.length) return;
   document.getElementById('data-empty').style.display='none';
   document.getElementById('data-area').style.display='block';
-  let h=`<table class="dtbl"><thead><tr><th>Customer</th><th>Part Name</th><th>Part No.</th><th>Material</th><th>Qty/Box</th><th>Qty/Bag</th><th>PIC</th></tr></thead><tbody>`;
-  rows.slice(0,50).forEach(r=>{
-    h+=`<tr><td>${r.cus}</td><td>${r.name}</td><td class="mono">${r.no}</td><td>${r.mat}</td><td class="mono">${r.qBox}</td><td class="mono">${r.qBag}</td><td>${r.pic}</td></tr>`;
-  });
-  h+='</tbody></table>';
+  let h='';
+  if(db.products.length){
+    h+=`<div style="font-size:11px;font-weight:600;color:var(--txt2);margin:2px 0 4px">📦 List Part — สินค้า</div><table class="dtbl"><thead><tr><th>Customer</th><th>Part Name</th><th>Part No.</th><th>Material</th><th>Qty/Box</th><th>Qty/Bag</th><th>PIC</th></tr></thead><tbody>`;
+    db.products.slice(0,50).forEach(r=>{
+      h+=`<tr><td>${esc(r.cus)}</td><td>${esc(r.name)}</td><td class="mono">${esc(r.no)}</td><td>${esc(r.mat)}</td><td class="mono">${esc(r.qBox)}</td><td class="mono">${esc(r.qBag)}</td><td>${esc(r.pic)}</td></tr>`;
+    });
+    h+='</tbody></table>';
+  }
+  if(db.materials.length){
+    h+=`<div style="font-size:11px;font-weight:600;color:var(--txt2);margin:10px 0 4px">📥 List Part – Material — วัตถุดิบ (${db.matGroups.length} ชนิด/ขนาด)</div><table class="dtbl"><thead><tr><th>Customer</th><th>Part Name</th><th>Part No.</th><th>Material</th><th>Thickness x wide</th><th>Coil/Sheet</th><th>Supplier</th></tr></thead><tbody>`;
+    db.materials.slice(0,50).forEach(r=>{
+      h+=`<tr><td>${esc(r.cus)}</td><td>${esc(r.name)}</td><td class="mono">${esc(r.no)}</td><td>${esc(r.mat)}</td><td class="mono">${esc(r.spec)}</td><td>${esc(r.unit)}</td><td>${esc(r.sups.join(' ; '))}</td></tr>`;
+    });
+    h+='</tbody></table>';
+  }
   document.getElementById('data-tbl').innerHTML=h;
-  document.getElementById('data-sum').textContent=`แสดง ${Math.min(rows.length,50)} จาก ${rows.length} รายการ`;
+  document.getElementById('data-sum').textContent=`แสดงสูงสุด 50 แถวต่อไฟล์ — ใช้งานได้ครบทุกรายการ (สินค้า ${db.products.length} · วัตถุดิบ ${db.materials.length})`;
 }
 
 // ══════════════════════════════════════════
@@ -996,6 +1207,7 @@ function confirmLot(p){
 //  QUEUE
 // ══════════════════════════════════════════
 function addQ(type){
+  if(type==='rm') return rmAddQ();
   if(!confirmLot(type==='bag'?'bg':'bx')) return;
   let item;
   const copies = parseInt(type==='bag'?v('bg-copies'):v('bx-copies'))||1;
@@ -1010,7 +1222,7 @@ function addQ(type){
     item={type:'box',...d};
   }
   queue.push(item); updateQueue();
-  sw('queue', document.querySelectorAll('.tbtn')[2]);
+  sw('queue', document.getElementById('tab-queue'));
 }
 
 function updateQueue(){
@@ -1021,18 +1233,30 @@ function updateQueue(){
   if(!queue.length){empty.style.display='';content.style.display='none';return;}
   empty.style.display='none'; content.style.display='';
   document.getElementById('q-tbody').innerHTML = queue.map((item,i)=>{
-    const st = STATUS_DEFS[item.status] || STATUS_DEFS.normal;
-    const stChip = st.color ? `<span class="chip st-${st.color}">${st.short}</span>` : `<span class="chip">ปกติ</span>`;
+    let typeChip, stChip, nameC, noC, qtyC, extraC;
+    if(item.type==='rm'){
+      const f = rmMonthInfo(item.date, item.monthSel);
+      typeChip = `<span class="chip" style="background:rgba(232,160,32,.16);color:#8a5a00">📥 FIFO</span>`;
+      stChip = `<span class="chip" style="background:${f.hex};color:${fifoText(f.hex)};border:1px solid rgba(0,0,0,.25)">${f.short} ${f.name}</span>`;
+      nameC = esc(item.name)||'-'; noC = esc(item.spec)||'-';
+      qtyC = `${esc(item.kgs)||'-'} Kgs · ${esc(item.coil)||'-'} ${esc(item.unit||'Coil')}`;
+      extraC = [item.sup&&('Supplier: '+esc(item.sup)), item.po&&('PO: '+esc(item.po))].filter(Boolean).join(' · ')||'-';
+    } else {
+      const st = STATUS_DEFS[item.status] || STATUS_DEFS.normal;
+      typeChip = `<span class="chip ${item.type==='bag'?'bag':''}">${item.type==='bag'?'🛍 ถุง':'📦 Box'}</span>`;
+      stChip = st.color ? `<span class="chip st-${st.color}">${st.short}</span>` : `<span class="chip">ปกติ</span>`;
+      nameC = item.name||'-'; noC = item.no||'-'; qtyC = `${item.qty||'-'} Pcs`; extraC = item.issue||'-';
+    }
     return `
     <tr>
       <td>${i+1}</td>
-      <td><span class="chip ${item.type==='bag'?'bag':''}">${item.type==='bag'?'🛍 ถุง':'📦 Box'}</span></td>
+      <td>${typeChip}</td>
       <td>${stChip}</td>
-      <td>${item.name||'-'}</td>
-      <td class="mono">${item.no||'-'}</td>
-      <td class="mono">${item.lot||'-'}</td>
-      <td>${item.qty||'-'} Pcs</td>
-      <td style="max-width:160px;white-space:normal;font-size:11.5px;color:var(--txt2)">${item.issue||'-'}</td>
+      <td>${nameC}</td>
+      <td class="mono">${noC}</td>
+      <td class="mono">${esc(item.lot)||'-'}</td>
+      <td>${qtyC}</td>
+      <td style="max-width:160px;white-space:normal;font-size:11.5px;color:var(--txt2)">${extraC}</td>
       <td><strong>${item.copies}</strong></td>
       <td><button class="delbtn" onclick="delQ(${i})">✕</button></td>
     </tr>`;}).join('');
@@ -1041,6 +1265,7 @@ function updateQueue(){
   queue.forEach(item=>{
     const total=parseInt(item.total)||0, qty=parseInt(item.qty)||0;
     const totalC=(total&&qty)?(Math.floor(total/qty)+(total%qty>0?1:0)):item.copies;
+    if(item.type==='rm'){ for(let i=1;i<=item.copies;i++) html+=`<div class="rm-wrap">${buildRmTag(item)}</div>`; return; }
     for(let i=1;i<=item.copies;i++) html+=item.type==='bag'?buildBagTag(item,i,totalC):buildBoxTag(item,(item.startBox||1)+i-1,(item.startBox||1)+totalC-1,i,totalC);
   });
   document.getElementById('q-prev').innerHTML=html;
@@ -1350,6 +1575,7 @@ html, body { background: #fff; font-family: Arial, Helvetica, sans-serif; -webki
 }
 .tag-ribbon-print.red    { background: #c0392b; }
 .tag-ribbon-print.yellow { background: #b8790a; }
+${RM_CSS}
 </style>`;
 }
 
@@ -1375,6 +1601,7 @@ function layoutTagsOnPages(items){
   pushPages(bagsS,  PER_BAG_TALL, 'grid-bag-tall');
   pushPages(boxesN, PER_BOX,      'grid-box');
   pushPages(boxesS, PER_BOX_TALL, 'grid-box-tall');
+  pushPages(items.filter(i => i.type === 'rm'), 4, 'grid-rm'); // 2 cols × 2 rows = 4 / page (96×136mm)
   return pages.join('');
 }
 
@@ -1394,6 +1621,7 @@ function confirmPaperColors(statusKeys){
 }
 
 function printNow(type){
+  if(type==='rm') return rmPrint();
   if(!confirmLot(type==='bag'?'bg':'bx')) return;
   const items=[];
   if(type==='bag'){
@@ -1419,6 +1647,7 @@ function printQueue(){
   if(!confirmPaperColors(queue.map(item=>item.status))) return;
   const items=[];
   queue.forEach(item=>{
+    if(item.type==='rm'){ for(let i=0;i<item.copies;i++) items.push({type:'rm',status:'normal',html:buildRmTag(item)}); return; }
     const total=parseInt(item.total)||0,qty=parseInt(item.qty)||0;
     const totalC=(total&&qty)?(Math.floor(total/qty)+(total%qty>0?1:0)):item.copies;
     const startBox=item.startBox||1;
@@ -1431,12 +1660,342 @@ function printQueue(){
 }
 
 // ══════════════════════════════════════════
+//  FIFO RAW-MATERIAL RECEIVING TAG (FM-WH-001)
+// ══════════════════════════════════════════
+const FIFO = [
+  {m:1,  th:'มกราคม',     en:'JAN', short:'ม.ค.',  name:'เหลือง',     hex:'#fdfe27'},
+  {m:2,  th:'กุมภาพันธ์',  en:'FEB', short:'ก.พ.',  name:'ชมพูเข้ม',   hex:'#e1546e'},
+  {m:3,  th:'มีนาคม',     en:'MAR', short:'มี.ค.', name:'เขียวเข้ม',  hex:'#009363'},
+  {m:4,  th:'เมษายน',     en:'APR', short:'เม.ย.', name:'ฟ้า',        hex:'#1da2e1'},
+  {m:5,  th:'พฤษภาคม',    en:'MAY', short:'พ.ค.',  name:'ส้ม',        hex:'#edab70'},
+  {m:6,  th:'มิถุนายน',    en:'JUN', short:'มิ.ย.', name:'ชมพูอ่อน',   hex:'#e592af'},
+  {m:7,  th:'กรกฎาคม',    en:'JUL', short:'ก.ค.',  name:'ม่วง',       hex:'#a35e9c'},
+  {m:8,  th:'สิงหาคม',    en:'AUG', short:'ส.ค.',  name:'น้ำตาล',     hex:'#a78868'},
+  {m:9,  th:'กันยายน',    en:'SEP', short:'ก.ย.',  name:'น้ำเงิน',    hex:'#275ea3'},
+  {m:10, th:'ตุลาคม',     en:'OCT', short:'ต.ค.',  name:'ขาว',        hex:'#ffffff'},
+  {m:11, th:'พฤศจิกายน',  en:'NOV', short:'พ.ย.',  name:'ดำ',         hex:'#3a3d3d'},
+  {m:12, th:'ธันวาคม',    en:'DEC', short:'ธ.ค.',  name:'เขียวอ่อน',  hex:'#3bac5e'}
+];
+let rmMonthSel = 'auto';   // 'auto' = follow DATE, or 1..12 = manual override
+let rmLotManual = false;   // true once the user typed their own LOT
+let rmBlank = false;       // blank-tag (manual entry) mode
+
+function fifoText(hex){
+  const c=[1,3,5].map(i=>parseInt(hex.substr(i,2),16)/255).map(x=>x<=0.03928?x/12.92:Math.pow((x+0.055)/1.055,2.4));
+  return (0.2126*c[0]+0.7152*c[1]+0.0722*c[2])<0.25 ? '#ffffff' : '#0d2240';
+}
+function esc(t){ return String(t==null?'':t).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch])); }
+function todayISO(){ const n=new Date(); return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0'); }
+const isISO = x => /^\d{4}-\d{2}-\d{2}$/.test(x||'');
+function fmtDate(iso){ return isISO(iso) ? iso.slice(8,10)+'/'+iso.slice(5,7)+'/'+iso.slice(0,4) : ''; }
+function lotFromISO(iso){ return isISO(iso) ? iso.slice(2,4)+iso.slice(5,7)+iso.slice(8,10) : ''; }
+function rmMonthInfo(iso, sel){
+  let m;
+  if(sel && sel!=='auto') m = +sel;
+  else if(isISO(iso)) m = +iso.slice(5,7);
+  else m = new Date().getMonth()+1;
+  return FIFO[m-1];
+}
+function lsGet(k, def){ try{ const x=localStorage.getItem(k); return x?JSON.parse(x):def; }catch(e){ return def; } }
+function lsSet(k, val){ try{ localStorage.setItem(k, JSON.stringify(val)); }catch(e){} }
+
+// ── Tag HTML (shared by preview + print) ──
+function buildRmTag(d){
+  const f = rmMonthInfo(d.date, d.monthSel);
+  const tc = fifoText(f.hex);
+  const chk = d.chk || [];
+  const ck = (t,r,o) => `<span class="rmt-ck" data-r="${r}" data-o="${o}"><i${chk[r]===o?' class="on"':''}></i>${t}</span>`;
+  const lotPart = d.showLot ? `<span class="rmt-l2">LOT :</span><span class="rmt-v">${esc(d.lot)}</span>` : '';
+  return `<div class="rmt" style="--c:${f.hex};--tc:${tc}">
+    <div class="rmt-hdr"><div class="rmt-logo"></div><div class="rmt-co">TACHIBANA YAMAMOTO<br>TECHNOLOGY (THAILAND) CO.,LTD</div></div>
+    <div class="rmt-rec">RECEIVED</div>
+    <div class="rmt-body">
+      <div class="rmt-fields">
+        <div class="rmt-row"><span class="rmt-l">DATE :</span><span class="rmt-v">${esc(fmtDate(d.date))}</span>${lotPart}</div>
+        <div class="rmt-row"><span class="rmt-l">SUPPLIER :</span><span class="rmt-v">${esc(d.sup)}</span></div>
+        <div class="rmt-row"><span class="rmt-l">NAME of Mat'l :</span><span class="rmt-v">${esc(d.name)}</span></div>
+        <div class="rmt-row"><span class="rmt-l">Q'TY :</span><span class="rmt-v">${esc(d.kgs)}</span><span class="rmt-u">Kgs.</span><span class="rmt-v sm">${esc(d.coil)}</span><span class="rmt-u">${esc(d.unit||'Coil')}</span></div>
+        <div class="rmt-row"><span class="rmt-l">SPEC. Mat'l :</span><span class="rmt-v">${esc(d.spec)}</span></div>
+        <div class="rmt-pi">
+          <div class="rmt-pi-l">
+            <div class="rmt-row"><span class="rmt-l">P / O :</span><span class="rmt-v">${esc(d.po)}</span></div>
+            <div class="rmt-row"><span class="rmt-l">INSPEC By :</span><span class="rmt-v">${esc(d.pic)}</span></div>
+          </div>
+          <div class="rmt-circle">${d.qc?'<b class="rmt-tick"></b><span class="rmt-qc">QC PASS</span>':''}</div>
+        </div>
+      </div>
+      <div class="rmt-det">
+        <div class="rmt-dt">DETAIL</div>
+        <div class="rmt-dr">${ck("Spec Mat'l ถูกที่ต้อง",0,0)}${ck("Spec Mat'l ไม่ตรง",0,1)}</div>
+        <div class="rmt-dr">${ck('ภาชนะบรรจุสมบูรณ์',1,0)}${ck('ภาชนะบรรจุแตกหัก',1,1)}</div>
+        <div class="rmt-dr">${ck('ไม่เสียหาย',2,0)}${ck('ชิ้นงานเสียหาย',2,1)}</div>
+        <div class="rmt-dr three">${ck('ครบตามจำนวน',3,0)}<div class="c2">${ck('ขาด',3,1)}${ck('เกิน',3,2)}</div></div>
+        <div class="rmt-dr">${ck('มีเอกสารแนบ',4,0)}${ck('ไม่มีเอกสารแนบ',4,1)}</div>
+        <div class="rmt-dr">${ck('มี ป้าย Tag ชี้บ่ง',5,0)}${ck('ไม่มี ป้าย Tag',5,1)}</div>
+      </div>
+    </div>
+    <div class="rmt-foot">FM-WH-001 Rev.01</div>
+  </div>`;
+}
+
+// ── Form helpers ──
+const RM_CHK = [
+  {o:["Spec Mat'l ถูกที่ต้อง","Spec Mat'l ไม่ตรง"]},
+  {o:['ภาชนะบรรจุสมบูรณ์','ภาชนะบรรจุแตกหัก']},
+  {o:['ไม่เสียหาย','ชิ้นงานเสียหาย']},
+  {o:['ครบตามจำนวน','ขาด','เกิน']},
+  {o:['มีเอกสารแนบ','ไม่มีเอกสารแนบ']},
+  {o:['มี ป้าย Tag ชี้บ่ง','ไม่มี ป้าย Tag']}
+];
+let rmChk = [null,null,null,null,null,null];   // ผลติ๊กแต่ละแถว (index ของตัวเลือก)
+let rmQc = false;                                // ติ๊ก QC PASS ในวงกลม
+let rmCurSups = [];                              // Supplier ที่ผูกกับ Material ที่เลือกอยู่
+
+function rmBuildChk(){
+  const el = document.getElementById('rm-chk');
+  el.innerHTML = RM_CHK.map((row,r)=>`<div class="chk-row">`+
+    row.o.map((t,o)=>`<button type="button" class="chk-chip${rmChk[r]===o?' sel '+(o===0?'ok':'ng'):''}" onclick="rmToggleChk(${r},${o})">${rmChk[r]===o?'✓ ':''}${esc(t)}</button>`).join('')+`</div>`).join('') +
+    `<div class="chk-row" style="margin-top:8px"><button type="button" class="chk-chip${rmQc?' sel qc':''}" onclick="rmToggleQc()">${rmQc?'✓ ':''}QC PASS (ติ๊กในวงกลมบน Tag)</button></div>`;
+}
+function rmToggleChk(r,o){ rmChk[r] = (rmChk[r]===o) ? null : o; rmRender(); }
+function rmToggleQc(){ rmQc = !rmQc; rmRender(); }
+function rmAllPass(){ rmChk = [0,0,0,0,0,0]; rmQc = true; rmRender(); }
+function rmClearChk(){ rmChk = [null,null,null,null,null,null]; rmQc = false; rmRender(); }
+
+// ── Supplier dropdown: ผูกกับ Material ที่เลือก → รายชื่อจาก Excel → ที่เคยพิมพ์ ──
+function rmSupDD(){
+  const el = document.getElementById('rm-sup-dd');
+  const q = v('rm-sup').toLowerCase().trim();
+  const f = l => l.filter(x=>!q || x.toLowerCase().includes(q));
+  const tied = f(rmCurSups);
+  const master = f(db.suppliers).filter(x=>!rmCurSups.includes(x));
+  const mem = f(lsGet('tytc_rm_sup',[])).filter(x=>!rmCurSups.includes(x) && !db.suppliers.includes(x));
+  const row = x => `<div class="dd-item" onclick="rmSelSup(this.dataset.v)" data-v="${esc(x)}"><span>${esc(x)}</span></div>`;
+  let h='';
+  if(tied.length) h += `<div class="dd-sec">★ ผูกกับ Material นี้</div>`+tied.map(row).join('');
+  if(master.length) h += `<div class="dd-sec">รายชื่อจาก Excel</div>`+master.slice(0,150).map(row).join('');
+  if(mem.length) h += `<div class="dd-sec">เคยพิมพ์ไว้</div>`+mem.slice(0,50).map(row).join('');
+  if(!h) h = `<div class="dd-empty">${db.suppliers.length?'ไม่พบ — พิมพ์ชื่อเองได้':'ยังไม่มีรายชื่อ — พิมพ์ชื่อผู้ขายได้เลย (หรือเพิ่มคอลัมน์ Supplier ในไฟล์ Excel)'}</div>`;
+  el.innerHTML = h;
+  el.classList.add('open');
+}
+function rmSelSup(x){
+  document.getElementById('rm-sup').value = x;
+  document.getElementById('rm-sup-dd').classList.remove('open');
+  rmRender();
+}
+function rmSetSupHint(){
+  document.getElementById('rm-sup-hint').textContent = rmCurSups.length
+    ? 'Supplier ที่ผูกกับ Material นี้: '+rmCurSups.join(' · ')+(rmCurSups.length>1?' — คลิกช่อง Supplier เพื่อเลือก':'')
+    : '';
+}
+
+// ดาวน์โหลดไฟล์ Excel วัตถุดิบ พร้อมคอลัมน์ Supplier ให้กรอกแล้วอัปโหลดกลับ
+function rmDownloadTemplate(){
+  if(!db.materials.length){ alert('ยังไม่ได้โหลดไฟล์ List Part – Material'); return; }
+  const rows = [['Customer','Part Name','Part No.','Material','Thickness x wide (mm)','x Coil','x Sheet (mm)','Supplier']]
+    .concat(db.materials.map(m=>[m.cus,m.name,m.no,m.mat,m.size,m.coil,m.sheet,m.sups.join(' ; ')]));
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{wch:34},{wch:28},{wch:20},{wch:16},{wch:20},{wch:8},{wch:13},{wch:36}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'List');
+  XLSX.writeFile(wb, 'List Part - Material (Supplier).xlsx');
+}
+
+function rmGet(){
+  return {
+    chk:rmChk.slice(), qc:rmQc,
+    date:v('rm-date'), monthSel:rmMonthSel, lot:v('rm-lot').trim(),
+    showLot:document.getElementById('rm-showlot').checked,
+    sup:v('rm-sup'), name:v('rm-name'), spec:v('rm-spec'),
+    kgs:v('rm-kgs'), coil:v('rm-coil'), unit:v('rm-unit'),
+    po:v('rm-po'), pic:v('rm-pic'),
+    copies:Math.max(1,Math.min(200,parseInt(v('rm-copies'))||1))
+  };
+}
+
+function buildFifoLegend(){
+  const el = document.getElementById('rm-legend');
+  el.innerHTML = `<div class="fifo-chip" data-m="auto" onclick="rmSetMonth('auto')">⚙️ อัตโนมัติตามวันที่รับ</div>` +
+    FIFO.map(f=>`<div class="fifo-chip" data-m="${f.m}" onclick="rmSetMonth(${f.m})"><i style="background:${f.hex}"></i>${f.short} ${f.name}</div>`).join('');
+}
+function rmSetMonth(m){ rmMonthSel = m; rmRender(); }
+
+function rmDateChanged(){
+  if(!rmLotManual) document.getElementById('rm-lot').value = lotFromISO(v('rm-date'));
+  rmRender();
+}
+function rmLotInput(){
+  rmLotManual = v('rm-lot').trim()!=='';
+  rmRender();
+}
+function rmLotFromDate(){
+  rmLotManual = false;
+  document.getElementById('rm-lot').value = lotFromISO(v('rm-date'));
+  rmRender();
+}
+
+// LOT รับวัตถุดิบ = ปี(2) + เดือน(2) + วัน(2)  เช่น 24 พ.ย. 2026 → 261124
+function rmLotCheck(val, dateISO){
+  val = (val||'').trim();
+  if(!val) return {state:'empty'};
+  if(!/^\d+$/.test(val)) return {state:'bad', msg:'⚠️ LOT ต้องเป็นตัวเลขเท่านั้น เช่น 261124'};
+  const curYear = new Date().getFullYear();
+  const cy = String(curYear%100).padStart(2,'0');
+  if(val.length>6) return {state:'bad', msg:`⚠️ LOT เกิน 6 หลัก (${val.length} หลัก) — รูปแบบ: ปี(2) เดือน(2) วัน(2) เช่น 261124`};
+  if(val.length<6){
+    if(!cy.startsWith(val.slice(0,2))){
+      const pre=val.slice(0,2);
+      return {state:'warn', msg:`⚠️ ปีไม่ตรงกับปัจจุบัน — LOT ขึ้นต้นด้วย "${pre}"${pre.length===2?` (= ปี ${2000+(+pre)})`:''} แต่ปีนี้คือ ${curYear} ต้องขึ้นต้นด้วย "${cy}" · กำลังพิมพ์ (${val.length}/6)`};
+    }
+    return {state:'typing', msg:`กำลังพิมพ์… (${val.length}/6) — รูปแบบ: ปี(2) เดือน(2) วัน(2) เช่น 261124`};
+  }
+  const yr=2000+(+val.slice(0,2)), m=+val.slice(2,4), d=+val.slice(4,6);
+  if(m<1||m>12) return {state:'bad', msg:`⚠️ เดือน "${val.slice(2,4)}" ไม่ถูกต้อง (ต้อง 01–12)`};
+  const dt=new Date(yr,m-1,d);
+  if(d<1||dt.getMonth()!==m-1||dt.getDate()!==d) return {state:'bad', msg:`⚠️ วันที่ "${val.slice(4,6)}" ไม่มีจริงในเดือน ${m}/${yr}`};
+  if(!cy.startsWith(val.slice(0,2))) return {state:'warn', msg:`⚠️ ปีไม่ตรงกับปัจจุบัน — LOT ขึ้นต้นด้วย "${val.slice(0,2)}" (= ปี ${yr}) แต่ปีนี้คือ ${curYear} ต้องขึ้นต้นด้วย "${cy}"`};
+  if(isISO(dateISO) && lotFromISO(dateISO)!==val) return {state:'warn', msg:`⚠️ LOT (${String(d).padStart(2,'0')}/${String(m).padStart(2,'0')}/${yr}) ไม่ตรงกับวันที่รับ DATE (${fmtDate(dateISO)}) — สี FIFO ใช้เดือนของวันที่รับ`};
+  return {state:'ok', msg:`✓ LOT ถูกต้อง — วันที่ ${d}/${m}/${yr}`};
+}
+function rmCheckLot(){
+  const el = document.getElementById('rm-lot-hint');
+  const r = rmLotCheck(v('rm-lot'), v('rm-date'));
+  if(r.state==='empty'){ el.className='lot-hint'; el.textContent=''; return r; }
+  el.className = 'lot-hint show '+r.state;
+  el.textContent = r.msg;
+  return r;
+}
+function rmConfirm(){
+  const r = rmCheckLot();
+  if(document.getElementById('rm-showlot').checked && (r.state==='bad'||r.state==='typing'||r.state==='warn'))
+    return confirm(`${r.msg}\n\nLOT รูปแบบนี้อาจไม่ถูกต้อง — ต้องการดำเนินการต่อหรือไม่?`);
+  return true;
+}
+
+function rmRender(){
+  const d = rmGet();
+  const f = rmMonthInfo(d.date, d.monthSel);
+  document.querySelectorAll('#rm-legend .fifo-chip').forEach(c=>{
+    c.classList.toggle('sel', String(c.dataset.m)===String(rmMonthSel));
+  });
+  const auto = rmMonthSel==='auto';
+  const sw_ = `<i style="display:inline-block;width:13px;height:13px;border-radius:3px;border:1px solid rgba(0,0,0,.3);background:${f.hex};vertical-align:-2px;margin-right:5px"></i>`;
+  document.getElementById('rm-color-note').innerHTML = sw_ + `<b>Tag สี${f.name}</b> — วัตถุดิบที่เข้าเดือน${f.th} (${f.en})` +
+    (auto ? (isISO(d.date) ? ' · ตามวันที่รับ' : ' · ไม่ได้ระบุวันที่ จึงใช้เดือนปัจจุบัน') : ' · เลือกเอง');
+  rmCheckLot();
+  rmBuildChk();
+  let html='';
+  for(let i=0;i<d.copies;i++) html += `<div class="rm-wrap">${buildRmTag(d)}</div>`;
+  document.getElementById('prev-rm').innerHTML = html;
+  document.getElementById('rm-tc').textContent = d.copies+' ใบ';
+}
+
+function rmRemember(d){
+  if(d.sup){ let l=lsGet('tytc_rm_sup',[]).filter(x=>x!==d.sup); l.unshift(d.sup); lsSet('tytc_rm_sup', l.slice(0,60)); }
+  if(d.pic) lsSet('tytc_rm_pic', d.pic);
+}
+
+function rmAddQ(){
+  if(!rmConfirm()) return;
+  const d = rmGet(); rmRemember(d);
+  queue.push({type:'rm', ...d});
+  updateQueue();
+  sw('queue', document.getElementById('tab-queue'));
+}
+function rmPrint(){
+  if(!rmConfirm()) return;
+  const d = rmGet(); rmRemember(d);
+  const items=[];
+  for(let i=0;i<d.copies;i++) items.push({type:'rm', status:'normal', html:buildRmTag(d)});
+  openPrint(items);
+}
+function clrRm(){
+  ['rm-cus','rm-name','rm-spec','rm-sup','rm-kgs','rm-coil','rm-po'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('rm-unit').value='Coil';
+  document.getElementById('rm-date').value = todayISO();
+  document.getElementById('rm-copies').value = 1;
+  document.getElementById('rm-used').textContent='';
+  rmMonthSel='auto'; rmLotManual=false; rmCurSups=[]; rmSetSupHint();
+  rmChk=[null,null,null,null,null,null]; rmQc=false;
+  document.getElementById('rm-lot').value = lotFromISO(todayISO());
+  rmRender();
+}
+function toggleRmBlank(){
+  rmBlank = document.getElementById('rm-blank').checked;
+  document.getElementById('rm-cus-fld').style.display = rmBlank ? 'none' : '';
+  document.getElementById('rm-name').placeholder = rmBlank ? 'พิมพ์ชื่อวัตถุดิบเอง หรือเว้นว่างเพื่อเขียนมือ' : 'คลิกเพื่อเลือก หรือพิมพ์ค้นหา Material / Part…';
+  document.getElementById('rm-dd').classList.remove('open');
+  document.getElementById('rm-cus-dd').classList.remove('open');
+  rmRender();
+}
+
+// ── Material dropdowns (from List Part – Material) ──
+function rmCusDD(){
+  const el = document.getElementById('rm-cus-dd');
+  document.getElementById('rm-dd').classList.remove('open');
+  if(rmBlank){ el.classList.remove('open'); return; }
+  if(!db.matCustomers.length){ el.innerHTML='<div class="dd-empty">ยังไม่ได้โหลดไฟล์ List Part – Material</div>'; el.classList.add('open'); return; }
+  const q = v('rm-cus').toLowerCase().trim();
+  const list = db.matCustomers.filter(c=>!q||c.toLowerCase().includes(q));
+  el.innerHTML = list.length ? list.map(c=>`<div class="dd-item" onclick="rmSelCus(${db.matCustomers.indexOf(c)})"><span>${esc(c)}</span></div>`).join('') : '<div class="dd-empty">ไม่พบลูกค้า</div>';
+  el.classList.add('open');
+}
+function rmSelCus(i){
+  document.getElementById('rm-cus').value = db.matCustomers[i];
+  document.getElementById('rm-cus-dd').classList.remove('open');
+  rmMatDD();
+}
+function rmFilterGroups(){
+  const cq = v('rm-cus').toLowerCase().trim(), q = v('rm-name').toLowerCase().trim();
+  const out = [];
+  db.matGroups.forEach((g,i)=>{
+    const parts = cq ? g.parts.filter(p=>p.cus.toLowerCase().includes(cq)) : g.parts;
+    if(!parts.length) return;
+    let hit = null;
+    if(q){
+      const self = (g.mat+' '+g.spec).toLowerCase().includes(q);
+      hit = parts.find(p=>(p.name+' '+p.no).toLowerCase().includes(q));
+      if(!self && !hit) return;
+    }
+    out.push({i, g, part:hit||parts[0], n:parts.length});
+  });
+  return out;
+}
+function rmMatDD(){
+  const el = document.getElementById('rm-dd');
+  document.getElementById('rm-cus-dd').classList.remove('open');
+  if(rmBlank){ el.classList.remove('open'); return; }
+  if(!db.matGroups.length){ el.innerHTML='<div class="dd-empty">ยังไม่ได้โหลดไฟล์ List Part – Material (ใช้โหมด Tag เปล่าได้)</div>'; el.classList.add('open'); return; }
+  const list = rmFilterGroups();
+  if(!list.length){ el.innerHTML='<div class="dd-empty">ไม่พบวัตถุดิบ</div>'; el.classList.add('open'); return; }
+  el.innerHTML = list.slice(0,200).map(x=>
+    `<div class="dd-item" onclick="rmSelMat(${x.i})"><span><b>${esc(x.g.mat)}</b> &nbsp;${esc(x.g.spec)}</span><span class="dd-meta">${esc(x.part.no)} ${esc(x.part.name)}${x.n>1?` (+${x.n-1})`:''}</span></div>`
+  ).join('') + (list.length>200 ? `<div class="dd-empty">แสดง 200 จาก ${list.length} — พิมพ์เพื่อค้นหาเพิ่ม</div>` : '');
+  el.classList.add('open');
+}
+function rmSelMat(i){
+  const g = db.matGroups[i];
+  document.getElementById('rm-name').value = g.mat;
+  document.getElementById('rm-spec').value = g.spec;
+  document.getElementById('rm-unit').value = g.unit;
+  rmCurSups = g.supEff || [];
+  if(rmCurSups.length===1) document.getElementById('rm-sup').value = rmCurSups[0];
+  rmSetSupHint();
+  const names = g.parts.slice(0,4).map(p=>`${p.name} (${p.no})`).join(' · ');
+  document.getElementById('rm-used').textContent = 'ใช้กับ: ' + names + (g.parts.length>4?` และอีก ${g.parts.length-4} รายการ`:'');
+  document.getElementById('rm-dd').classList.remove('open');
+  rmRender();
+}
+function rmNameInput(){ rmCurSups=[]; rmSetSupHint(); document.getElementById('rm-used').textContent=''; rmMatDD(); rmRender(); }
+
+// ══════════════════════════════════════════
 //  HELPERS
 // ══════════════════════════════════════════
 function sw(name,el){
   document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('act'));
   el.classList.add('act');
-  ['bag','box','queue'].forEach(t=>document.getElementById('t-'+t).style.display=t===name?'':'none');
+  ['bag','box','rm','queue'].forEach(t=>document.getElementById('t-'+t).style.display=t===name?'':'none');
 }
 function clrBag(){
   ['bg-cus','bg-name','bg-no','bg-mat','bg-pic','bg-lot','bg-qty','bg-total','bg-issue'].forEach(id=>document.getElementById(id).value='');
@@ -1466,7 +2025,17 @@ function clrBox(){
 }
 
 // init
-document.getElementById('bx-del').value = new Date().toISOString().split('T')[0];
+document.getElementById('bx-del').value = todayISO();
+(function(){ const st=document.createElement('style'); st.id='rm-style'; st.textContent=RM_CSS; document.head.appendChild(st); })();
+document.getElementById('rm-date').value = todayISO();
+document.getElementById('rm-lot').value = lotFromISO(todayISO());
+document.getElementById('rm-pic').value = lsGet('tytc_rm_pic','');
+buildFifoLegend(); rmRender();
+document.getElementById('prev-rm').addEventListener('click', e=>{
+  const ck = e.target.closest('.rmt-ck[data-r]');
+  if(ck){ rmToggleChk(+ck.dataset.r, +ck.dataset.o); return; }
+  if(e.target.closest('.rmt-circle')) rmToggleQc();
+});
 buildStatusButtons('bg-status-group','bag');
 buildStatusButtons('bx-status-group','box');
 </script>
