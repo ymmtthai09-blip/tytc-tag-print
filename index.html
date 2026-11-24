@@ -282,8 +282,8 @@ body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(
 
           <!-- LOT No. (ปี 1 หลัก + เดือน 2 หลัก + วัน 2 หลัก + กะ/ม้วน 1 หลัก) -->
           <div class="fld" style="margin-bottom:0">
-            <label>LOT No. <span style="text-transform:none;font-weight:400;color:var(--txt3)">(ปี·เดือน·วัน·กะ เช่น 611101)</span></label>
-            <input id="bg-lot" placeholder="เช่น 611101" inputmode="numeric" oninput="renderBag();checkLot('bg')">
+            <label>LOT No. <span style="text-transform:none;font-weight:400;color:var(--txt3)">(ปี2·เดือน·วัน·กะ เช่น 2611101)</span></label>
+            <input id="bg-lot" placeholder="เช่น 2611101" inputmode="numeric" oninput="renderBag();checkLot('bg')">
           </div>
           <div class="lot-hint" id="bg-lot-hint"></div>
           <div class="lot-quick">ใส่ LOT วันนี้:
@@ -390,7 +390,7 @@ body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(
             <label for="bx-rohs" style="font-size:12.5px;font-weight:600;color:#1a7a4a;cursor:pointer;text-transform:none;letter-spacing:0">🟢 ประทับตรา RoHS บน Tag</label>
           </div>
           <div class="r2">
-            <div class="fld"><label>LOT NO. <span style="text-transform:none;font-weight:400;color:var(--txt3)">(เช่น 611101)</span></label><input id="bx-lot" placeholder="เช่น 611101" inputmode="numeric" oninput="renderBox();checkLot('bx')"></div>
+            <div class="fld"><label>LOT NO. <span style="text-transform:none;font-weight:400;color:var(--txt3)">(เช่น 2611101)</span></label><input id="bx-lot" placeholder="เช่น 2611101" inputmode="numeric" oninput="renderBox();checkLot('bx')"></div>
             <div class="fld"><label>DEL. DATE</label><input type="date" id="bx-del" oninput="renderBox()"></div>
           </div>
           <div class="lot-hint" id="bx-lot-hint"></div>
@@ -941,31 +941,32 @@ function renderBox(){
 }
 
 // ══════════════════════════════════════════
-//  LOT No. VALIDATION  (ปี1 + เดือน2 + วัน2 + กะ/ม้วน1)
-//  เช่น 10 พ.ย. 2026 กะ1 → 6 11 10 1 = 611101
+//  LOT No. VALIDATION  (ปี2 + เดือน2 + วัน2 + กะ/ม้วน1 = 7 หลัก)
+//  เช่น 10 พ.ย. 2026 กะ1 → 26 11 10 1 = 2611101
 // ══════════════════════════════════════════
-// ตรวจรูปแบบ + เตือนถ้าตัวเลขปี (หลักแรก) ไม่ตรงกับปีปัจจุบัน
+// ตรวจรูปแบบ + เตือนสีส้มถ้าตัวเลขปี (2 หลักแรก) ไม่ตรงกับปีปัจจุบัน
 function lotCheck(val){
   const r = lotCheckCore(val);
   val = (val||'').trim();
   const curYear = new Date().getFullYear();
-  if((r.state==='typing'||r.state==='ok') && val[0]!==String(curYear%10)){
-    const yr = Math.floor(curYear/10)*10 + (+val[0]);
-    return {state:'warn', msg:`⚠️ ปีไม่ตรงกับปัจจุบัน — LOT ขึ้นต้นด้วย "${val[0]}" (= ปี ${yr}) แต่ปีนี้คือ ${curYear} ต้องขึ้นต้นด้วย "${curYear%10}"`+(r.state==='typing'?` · กำลังพิมพ์ (${val.length}/6)`:'')};
+  const cy = String(curYear%100).padStart(2,'0');
+  if((r.state==='typing'||r.state==='ok') && !cy.startsWith(val.slice(0,2))){
+    const pre = val.slice(0,2);
+    const yrTxt = pre.length===2 ? ` (= ปี ${2000+(+pre)})` : '';
+    return {state:'warn', msg:`⚠️ ปีไม่ตรงกับปัจจุบัน — LOT ขึ้นต้นด้วย "${pre}"${yrTxt} แต่ปีนี้คือ ${curYear} ต้องขึ้นต้นด้วย "${cy}"`+(r.state==='typing'?` · กำลังพิมพ์ (${val.length}/7)`:'')};
   }
   return r;
 }
 function lotCheckCore(val){
   val = (val||'').trim();
   if(!val) return {state:'empty'};
-  if(!/^\d+$/.test(val)) return {state:'bad', msg:'⚠️ LOT ต้องเป็นตัวเลขเท่านั้น เช่น 611101'};
-  if(val.length<6) return {state:'typing', msg:`กำลังพิมพ์… (${val.length}/6) — รูปแบบ: ปี(1) เดือน(2) วัน(2) กะ/ม้วน(1) เช่น 611101`};
-  if(val.length>6) return {state:'bad', msg:`⚠️ LOT เกิน 6 หลัก (${val.length} หลัก) — รูปแบบ: ปี(1) เดือน(2) วัน(2) กะ/ม้วน(1)`};
-  const y=+val[0], m=+val.slice(1,3), d=+val.slice(3,5), sft=val[5];
-  const yr = Math.floor(new Date().getFullYear()/10)*10 + y;
-  if(m<1||m>12) return {state:'bad', msg:`⚠️ เดือน "${val.slice(1,3)}" ไม่ถูกต้อง (ต้อง 01–12)`};
+  if(!/^\d+$/.test(val)) return {state:'bad', msg:'⚠️ LOT ต้องเป็นตัวเลขเท่านั้น เช่น 2611101'};
+  if(val.length<7) return {state:'typing', msg:`กำลังพิมพ์… (${val.length}/7) — รูปแบบ: ปี(2) เดือน(2) วัน(2) กะ/ม้วน(1) เช่น 2611101`};
+  if(val.length>7) return {state:'bad', msg:`⚠️ LOT เกิน 7 หลัก (${val.length} หลัก) — รูปแบบ: ปี(2) เดือน(2) วัน(2) กะ/ม้วน(1)`};
+  const yr=2000+(+val.slice(0,2)), m=+val.slice(2,4), d=+val.slice(4,6), sft=val[6];
+  if(m<1||m>12) return {state:'bad', msg:`⚠️ เดือน "${val.slice(2,4)}" ไม่ถูกต้อง (ต้อง 01–12)`};
   const dt = new Date(yr,m-1,d);
-  if(d<1||dt.getMonth()!==m-1||dt.getDate()!==d) return {state:'bad', msg:`⚠️ วันที่ "${val.slice(3,5)}" ไม่มีจริงในเดือน ${m}/${yr}`};
+  if(d<1||dt.getMonth()!==m-1||dt.getDate()!==d) return {state:'bad', msg:`⚠️ วันที่ "${val.slice(4,6)}" ไม่มีจริงในเดือน ${m}/${yr}`};
   if(sft!=='1'&&sft!=='2') return {state:'bad', msg:`⚠️ เลขท้าย "${sft}" ต้องเป็น 1 (กะ1/ม้วนที่1) หรือ 2 (กะ2/เปลี่ยนม้วน)`};
   return {state:'ok', msg:`✓ ปี ${yr} · เดือน ${m} · วันที่ ${d} · ${sft==='1'?'กะ1 / ม้วน Coil ที่ 1':'กะ2 / เปลี่ยนม้วน Coil'}`};
 }
@@ -980,7 +981,7 @@ function checkLot(p){
 function setLot(p, sft){
   const n = new Date();
   const pad = x => String(x).padStart(2,'0');
-  document.getElementById(p+'-lot').value = (n.getFullYear()%10)+pad(n.getMonth()+1)+pad(n.getDate())+sft;
+  document.getElementById(p+'-lot').value = pad(n.getFullYear()%100)+pad(n.getMonth()+1)+pad(n.getDate())+sft;
   checkLot(p);
   if(p==='bg') renderBag(); else renderBox();
 }
